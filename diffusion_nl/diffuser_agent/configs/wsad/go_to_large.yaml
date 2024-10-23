@@ -25,7 +25,7 @@ use_agent_type: False
 planning_type: "ivd"
 sampling_strategy: "ddpm"
 num_steps: 64
-action_space: 0
+action_space: 4
 num_distractors: 7 
 model_type: "edm"
 model_store: ../../model_store

@@ -3,13 +3,13 @@
 set -e 
 
 # Seed 1
-python ./eval.py --config ./configs/standard/go_to_large.yaml --dm_model_path "mixed_action_space_goto_large_extended_3/DiffusionMultiAgent" --dm_model_name "aeon8dcu" --dm_model_checkpoint "epoch=454-step=100000.ckpt" --experiment_name standard_go_to_large_mixed_agent_id_1   --device "cuda:0" 
+#python ./eval.py --config ./configs/standard/go_to_large.yaml --dm_model_path "mixed_action_space_goto_large_extended_3/DiffusionMultiAgent" --dm_model_name "aeon8dcu" --dm_model_checkpoint "epoch=454-step=100000.ckpt" --experiment_name standard_go_to_large_mixed_agent_id_1   --device "cuda:0" 
 
-python ./eval.py --config ./configs/no_left/go_to_large.yaml --dm_model_path "mixed_action_space_goto_large_extended_3/DiffusionMultiAgent" --dm_model_name "aeon8dcu" --dm_model_checkpoint "epoch=454-step=100000.ckpt" --experiment_name  no_left_go_to_large_mixed_agent_id_1  --device "cuda:0"  
+#python ./eval.py --config ./configs/no_left/go_to_large.yaml --dm_model_path "mixed_action_space_goto_large_extended_3/DiffusionMultiAgent" --dm_model_name "aeon8dcu" --dm_model_checkpoint "epoch=454-step=100000.ckpt" --experiment_name  no_left_go_to_large_mixed_agent_id_1  --device "cuda:0"  
 
-python ./eval.py --config ./configs/no_right/go_to_large.yaml --dm_model_path "mixed_action_space_goto_large_extended_3/DiffusionMultiAgent" --dm_model_name "aeon8dcu" --dm_model_checkpoint "epoch=454-step=100000.ckpt" --experiment_name no_right_go_to_large_mixed_agent_id_1   --device "cuda:0" 
+#python ./eval.py --config ./configs/no_right/go_to_large.yaml --dm_model_path "mixed_action_space_goto_large_extended_3/DiffusionMultiAgent" --dm_model_name "aeon8dcu" --dm_model_checkpoint "epoch=454-step=100000.ckpt" --experiment_name no_right_go_to_large_mixed_agent_id_1   --device "cuda:0" 
 
-python ./eval.py --config ./configs/diagonal/go_to_large.yaml --dm_model_path "mixed_action_space_goto_large_extended_3/DiffusionMultiAgent" --dm_model_name "aeon8dcu" --dm_model_checkpoint "epoch=454-step=100000.ckpt" --experiment_name diagonal_go_to_large_mixed_agent_id_1   --device "cuda:0" 
+#python ./eval.py --config ./configs/diagonal/go_to_large.yaml --dm_model_path "mixed_action_space_goto_large_extended_3/DiffusionMultiAgent" --dm_model_name "aeon8dcu" --dm_model_checkpoint "epoch=454-step=100000.ckpt" --experiment_name diagonal_go_to_large_mixed_agent_id_1   --device "cuda:0" 
 
 python ./eval.py --config ./configs/wsad/go_to_large.yaml --dm_model_path "mixed_action_space_goto_large_extended_3/DiffusionMultiAgent" --dm_model_name "aeon8dcu" --dm_model_checkpoint "epoch=454-step=100000.ckpt" --experiment_name wsad_go_to_large_mixed_agent_id_1   --device "cuda:0" 
 
