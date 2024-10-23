@@ -5,10 +5,11 @@ import torch
 
 def set_seed(seed:int):
     np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
     random.seed(seed)
-
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+ 
 
 def get_cuda_memory_usage():
     r = torch.cuda.memory_reserved(0)

@@ -8,13 +8,6 @@ import torch
 from minigrid.core.constants import COLOR_ENV_NAMES
 
 
-# Seed everything
-def seeding(seed: int):
-    np.random.seed(seed)
-    random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
 
 # All environment names BabyAI
 LEVELS2NAME = [

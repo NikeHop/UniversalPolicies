@@ -10,7 +10,7 @@ import wandb
 
 from diffusion_nl.ivd_model.data import get_data
 from diffusion_nl.ivd_model.model import IVDBabyAI, IVDCalvin
-
+from diffusion_nl.utils.utils import set_seed
 
 def train_ivd(config):
     with isolate_rng(include_cuda=True):
@@ -113,9 +113,12 @@ if __name__ == "__main__":
     with open(args.config, "rb") as file:
         config = yaml.safe_load(file)
 
-    # Update config with data path
+    # Seed everything
+    set_seed(config["seed"])
+
+    # Update config with CLI arguments
     if args.datapath is not None:
-        config["data"]["path"] = args.datapath
+        config["data"]["datapath"] = args.datapath
 
     if args.action_space is not None:
         config["model"]["action_space"] = args.action_space
@@ -125,7 +128,6 @@ if __name__ == "__main__":
         project=config["logging"]["project"],
         name=config["logging"]["experiment_name"]
     )
-
     wandb.config.update(config)
 
     train_ivd(config)

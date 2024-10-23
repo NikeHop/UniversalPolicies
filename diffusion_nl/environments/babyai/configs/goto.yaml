@@ -1,15 +1,15 @@
 ---
-fig_directory: ../figures/baby_ai
-seed: 42
-env: GOTO
-n_episodes: 5000
-num_workers: 32
-data_directory: ../../../data
 action_space: 0
+data_directory: ../../../data
+env: GOTO
+fig_directory: ../figures/baby_ai
 img_size: 128
-use_img_obs: False
 max_steps: 25
-debug: False
 minimum_length: 4
-num_distractors: 3
+num_distractors: 0
+num_workers: 32
+n_episodes: 5000
+seed: 42
 use_agent_type: True
+use_img_obs: False
+

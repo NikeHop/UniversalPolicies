@@ -11,7 +11,7 @@ import sys
 print(sys.path)
 
 from minigrid.core.actions import ActionSpace
-from generate import generate_demos
+from diffusion_nl.environments.babyai.generate_demos import generate_demos
 import yaml
 
 from diffusion_nl.utils.environments import (
