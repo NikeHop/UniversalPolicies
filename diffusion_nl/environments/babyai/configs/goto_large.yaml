@@ -1,0 +1,19 @@
+---
+fig_directory: ../figures/baby_ai
+seed: 1
+env: GOTO_LARGE
+n_episodes: 25000
+num_workers: 32
+data_directory: ../../../data
+action_space: 0
+img_size: 128
+use_img_obs: False
+max_steps: 100
+debug: False
+minimum_length: 4
+num_distractors: 7
+use_agent_type: False
+part: -1
+logging:
+  project: DiffusionMultiAgent
+  experiment_name: generate_data_go_to_large

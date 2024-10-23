@@ -1,0 +1,3 @@
+[submodule "diffusion_nl/environments/Minigrid"]
+	path = diffusion_nl/environments/Minigrid
+	url = https://github.com/NikeHop/Minigrid

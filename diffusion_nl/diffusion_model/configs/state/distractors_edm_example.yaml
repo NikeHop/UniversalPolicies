@@ -1,0 +1,97 @@
+---
+data:
+  dataset: "BabyAI"
+  data_path: ../../data/GOTO/standard_5000_4_3_False_demos/dataset_5000.pkl
+  action_spaces: [0]
+  train_split: 0.75
+  batch_size: 128
+  n_frames: 4
+  n_context_frames: 10
+  step_frequency: 1
+  embeddings:
+    device: "cuda:0"
+    type: "t5"
+    size: 128
+    model: "google-t5/t5-small"
+    batch_size: 4096
+  mean: 5
+  std: 5
+  example_path: ../../data/GOTO/GOTO_1_3_full_action_space_random.pkl
+
+logging:
+  experiment_name: "test_edm"
+  model_directory: "../../model_store"
+  project: DiffusionMultiAgent # Wandb project name 
+  entity: diffusion-boyz
+  tags: ["BabyAI","DiffusionPlanner","SampleEfficiency"]
+
+env:
+  env_name: "BabyAI-GoToObj-v0" 
+  use_agent_type: False
+  num_distractors: 3
+  accelerator: "gpu"
+
+model:
+  model_type: edm
+  debug: False
+  image_directory: "../../figures"
+  num_steps: 64
+  P_mean: -1.2
+  P_std: 1.2
+  sigma_data: 0.5
+  min_sigma: 0.002
+  max_sigma: 80
+  rho: 7 
+  lr: 0.00002
+  mean: 5
+  std: 5
+  use_instruction: True
+  use_context: True
+  cond_w: 0
+  image_size: 8
+  image_channel: 3
+
+  eval:
+    n_samples: 1
+    n_frames: 4
+    n_context_frames: 10
+
+  error_model:
+    img_channels: 3
+    in_channels: 64
+    time_channels: 128
+    resolutions: [2,2]
+    n_heads: 1
+    use_rotary_emb: True
+    label_dim: 512
+    label_dropout: 0
+    n_agents: 8
+    n_frames: 4
+    n_context_frames: 10
+    context_conditioning_type: time
+
+  load:
+    load: False
+    checkpoint: ""
+
+evaluation:
+  eval: False
+  agent_type: "diffusion"
+  planning_type: "ivd"
+  ivd_config_file: ./configs/ivd_goto_distractors.yaml
+  cond_w: 0
+  device: "cuda:0"
+  num_envs: 512
+  max_timesteps: 15
+  evaluation_episodes: 1
+
+training:
+  early_stopping: False
+  distributed: True
+  max_steps: 500001
+  accelerator: "gpu"
+  strategy: "ddp_find_unused_parameters_true"
+  check_val_every_n_epoch: 
+  val_check_interval: 100000
+  gpus: [0]
+  save_all: True

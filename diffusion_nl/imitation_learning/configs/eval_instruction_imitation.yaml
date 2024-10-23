@@ -1,0 +1,20 @@
+---
+seed: 42
+checkpoint: /var/scratch/nrhopner/experiments/diffusion_nl/model_store/imitation_learning_goal_obs/DiffusionMultiAgent/0l344x93/checkpoints/epoch=99-step=11300.ckpt
+device: "cuda:0"
+
+logging:
+  entity: Niklas_hop
+  project: DiffusionMultiAgent
+  mode: online
+  model_directory: "../../model_store"
+  experiment_name: "imitation_learning_goal_obs"
+  tags: ["BabyAI","ImitationLearning","GoalObs"]
+
+env: "goto"
+encoder_model: "google-t5/t5-small"
+num_distractors: 3
+action_space: 1
+num_envs: 512
+evaluation_episodes: 1
+max_timesteps: 15

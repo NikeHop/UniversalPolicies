@@ -1,0 +1,33 @@
+---
+device: "cuda:0"
+env: bosslevel
+env_name: "BabyAI-BossLevel-v0" 
+evaluation_episodes: 1
+num_envs: 10
+max_timesteps: 60
+visualize: True
+data_path: "../../data/BOSSLEVEL/standard_1000000_4_0_demos/dataset_1000000.pkl"
+embeddings:
+  device: "cuda:0"
+  type: "t5"
+  size: 10
+  model: "google-t5/t5-small"
+  batch_size: 4096
+
+agent_type: 'diffusion'
+action_space: 0
+num_distractors: 0
+model_store: ../../model_store
+ivd_model_path: ivd_model_standard/DiffusionMultiAgent
+ivd_model_name: nyw7tg8q
+ivd_model_checkpoint: checkpoints/epoch=6-step=87500.ckpt
+dm_model_path: "diffusion_boss_level/DiffusionMultiAgent"
+dm_model_name: "pryy2kkt"
+dm_model_checkpoint: "epoch=136-step=800000.ckpt"
+
+logging:
+  experiment_name: "evaluation_diffusion_agent"
+  model_directory: "../../model_store"
+  project: DiffusionMultiAgent # Wandb project name 
+  entity: diffusion-boyz
+  tags: ["BabyAI","DiffusionPlanner","SampleEfficiency","Evaluation"]

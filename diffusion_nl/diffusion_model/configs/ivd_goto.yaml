@@ -1,0 +1,33 @@
+---
+0: 
+  ivd_model_path: ivd_model_all/DiffusionMultiAgent
+  ivd_model_name: 023r9dmw
+  ivd_model_checkpoint: checkpoints/epoch=499-step=9500.ckpt
+1:
+  ivd_model_path: ivd_model_all/DiffusionMultiAgent
+  ivd_model_name: k4mwp4wu
+  ivd_model_checkpoint: checkpoints/epoch=499-step=9500.ckpt
+2:
+  ivd_model_path: ivd_model_all/DiffusionMultiAgent
+  ivd_model_name: qx1bc955
+  ivd_model_checkpoint: checkpoints/epoch=499-step=9500.ckpt
+3:
+  ivd_model_path: ivd_model_all/DiffusionMultiAgent
+  ivd_model_name: 2zidnhq0
+  ivd_model_checkpoint: checkpoints/epoch=499-step=9500.ckpt
+4:
+  ivd_model_path: ivd_model_all/DiffusionMultiAgent
+  ivd_model_name: g6fwn25f
+  ivd_model_checkpoint: checkpoints/epoch=499-step=9500.ckpt
+5:
+  ivd_model_path: ivd_model_all/DiffusionMultiAgent
+  ivd_model_name: avu9ge1t
+  ivd_model_checkpoint: checkpoints/epoch=499-step=9500.ckpt
+6:
+  ivd_model_path: ivd_model_all/DiffusionMultiAgent
+  ivd_model_name: s1purv7g
+  ivd_model_checkpoint: checkpoints/epoch=499-step=9500.ckpt
+7:
+  ivd_model_path: ivd_model_all/DiffusionMultiAgent
+  ivd_model_name: iu90uvt3
+  ivd_model_checkpoint: checkpoints/epoch=499-step=9500.ckpt

@@ -1,0 +1,38 @@
+---
+device: "cuda:1"
+action_model: "ivd"
+env: goto
+env_name: "BabyAI-GoToObj-v0" 
+example_path: /var/scratch/nrhopner/experiments/diffusion_nl/data/GOTO/GOTO_1_full_action_space_random.pkl
+evaluation_episodes: 1
+num_envs: 512
+max_timesteps: 15
+visualize: False
+num_distractors: 0
+n_example_frames: 10
+cond_w: 0
+embeddings:
+  device: "cuda:0"
+  type: "t5"
+  size: 10
+  model: "google-t5/t5-small"
+  batch_size: 4096
+  
+agent_type: 'diffusion'
+use_agent_type: True
+planning_type: "finegrained"
+sampling_strategy: "ddpm"
+action_space: 1
+model_store: ../../model_store
+ivd_model_path: ivd_model_all/DiffusionMultiAgent
+ivd_model_name: k4mwp4wu
+ivd_model_checkpoint: checkpoints/epoch=499-step=9500.ckpt
+dm_model_path: ""
+dm_model_name: ""
+dm_model_checkpoint: ""
+
+logging:
+  experiment_name: "evaluation_diffusion_agent_no_left"
+  model_directory: "../../model_store"
+  project: DiffusionMultiAgent # Wandb project name 
+  tags: ["BabyAI","DiffusionPlanner","SampleEfficiency","Evaluation"]

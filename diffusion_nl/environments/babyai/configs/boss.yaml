@@ -1,0 +1,18 @@
+---
+fig_directory: ../figures/baby_ai
+seed: 42
+env: BOSSLEVEL
+n_episodes: 100000
+num_workers: 64
+data_directory: ../../../data
+action_space: 0
+img_size: 128
+use_img_obs: False
+max_steps: 200
+debug: False
+minimum_length: 4
+num_distractors: 0
+use_agent_type: False
+logging:
+  project: DiffusionMultiAgent
+  experiment_name: generate_data_boss

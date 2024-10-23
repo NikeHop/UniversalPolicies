@@ -1,0 +1,11 @@
+data
+figures
+model_store
+wandb
+**/wandb
+
+results
+diffusion_nl.egg-info
+**/__pycache__/
+*.err
+*.out

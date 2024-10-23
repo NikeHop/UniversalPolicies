@@ -1,0 +1,51 @@
+---
+goal_type: "language"
+seed: 42
+
+data:
+  directory: "../../data/GOTO/standard_30000_4_3_False_demos"
+  filename: "dataset_30000.pkl"
+  max_gap: 100
+  batch_size: 128
+  percentage: 0.8
+
+embeddings:
+  device: "cuda:0"
+  type: "t5"
+  model: "google-t5/t5-small"
+  batch_size: 4096
+
+
+model:
+  lr: 0.0001
+  large_env: False
+  action_space: 0
+  load:
+    load: False
+    checkpoint: ""
+
+training:
+  distributed: True
+  accelerator: "gpu"
+  gpus: [3]
+  strategy: "ddp_find_unused_parameters_true"
+  max_epochs: 20
+
+logging:
+  entity: Niklas_hop
+  project: DiffusionMultiAgent
+  mode: online
+  model_directory: "../../model_store"
+  experiment_name: "imitation_learning_goal_obs"
+  tags: ["BabyAI","ImitationLearning","GoalObs"]
+
+eval:
+  eval: True
+  device: "cuda:0"
+  env: "goto"
+  encoder_model: "google-t5/t5-small"
+  num_distractors: 3
+  action_space: 0
+  num_envs: 512
+  evaluation_episodes: 1
+  max_timesteps: 15
