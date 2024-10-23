@@ -1,6 +1,54 @@
 GO_TO_IRRELEVANT_ACTIONS = [Actions(3), Actions(4), Actions(5), Actions(6)]
 BOSSLEVEL_IRRELEVANT_ACTIONS = [Actions(6)]
 
+def check_subsequence(subsequence, action_space):
+    if len(subsequence) < 3:
+        return False
+    print([int(elem) for elem in subsequence])
+    if action_space == 0:
+        # It should contain either a turn left or turn right
+        subsequence = [int(elem) for elem in subsequence]
+        action_types = set(subsequence)
+        if 1 in action_types or 0 in action_types:
+            return True
+
+    elif action_space == 1:
+        # It should contain three right turns
+        subsequence = [int(elem) for elem in subsequence]
+        action_types = set(subsequence)
+        if 1 in action_types and len(action_types) == 1:
+            return True
+
+    elif action_space == 2:
+        # It should contain three left turns
+        subsequence = [int(elem) for elem in subsequence]
+        action_types = set(subsequence)
+        if 0 in action_types and len(action_types) == 1:
+            return True
+
+    elif action_space == 3:
+        # It should contain a diagonal
+        subsequence = [int(elem) for elem in subsequence]
+        action_types = set(subsequence)
+        print(action_types)
+        if 7 in action_types or 8 in action_types:
+            return True
+
+    return False
+
+
+def check_condition(examples, n_examples):
+    print("Check conditions")
+    if len(examples) < 4:
+        return False
+
+    for i, value in examples.items():
+        print(i, len(value))
+        if len(value) < n_examples:
+            return False
+    return True
+
+
 def generate_example_trajectories(config):
     if config["trajectory_type"]=="full_action_space_single_random":
         generate_full_action_space_random(

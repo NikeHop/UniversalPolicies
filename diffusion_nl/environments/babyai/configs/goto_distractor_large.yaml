@@ -1,7 +1,7 @@
 ---
 fig_directory: ../figures/baby_ai
 seed: 1
-env: GOTO_LARGE
+env: GOTO_DISTRACTOR_LARGE
 n_episodes: 25000
 num_workers: 32
 data_directory: ../../../data

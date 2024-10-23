@@ -1,4 +1,5 @@
 data
+!data/GOTO
 figures
 model_store
 wandb

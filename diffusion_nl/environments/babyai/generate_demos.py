@@ -6,26 +6,18 @@ import pickle
 import random
 import time
 
-from collections import defaultdict
-
 import blosc
 import gymnasium as gym
-import matplotlib.pyplot as plt
-from minigrid.core.actions import ActionSpace, Actions, ActionSpace
-from minigrid.utils.baby_ai_bot_bfs import BabyAIBot
-from minigrid.wrappers import RGBImgObsWrapper, FullyObsWrapper
 import numpy as np
 import torch
 import wandb
 import yaml
 
+from minigrid.core.actions import ActionSpace, ActionSpace
+from minigrid.utils.baby_ai_bot_bfs import BabyAIBot
+from minigrid.wrappers import RGBImgObsWrapper, FullyObsWrapper
 from tqdm import tqdm
 
-from diffusion_nl.diffusion_model.utils import (
-    transform_sample,
-    extract_agent_pos_and_direction,
-    state2img,
-)
 from diffusion_nl.utils.environments import FIXINSTGOTO_ENVS
 from diffusion_nl.utils.utils import set_seed
 
@@ -40,7 +32,6 @@ def generate_episode(
     seed: int,
     use_img_obs: bool,
     num_distractors: int,
-    debug: bool,
     use_agent_type: bool,
     img_size: int,
     resample_on_fail: bool = True,
@@ -52,43 +43,26 @@ def generate_episode(
         env_name (str): the name of the environment (without prefixes and suffixes)
         action_space (ActionSpace): action space
         minimum_length (int): minimum length of the episode (otherwise it is discarded)
+        max_steps (int): maximum number of steps possible in the episode
         seed (int): seed
         use_img_obs (bool): if true uses image observation otherwise uses fully obs state space
-        debug (bool): debug flag
+        num_distractors (int): number of distractors in the environment
+        use_agent_type (bool): if true give the agent a colour depending on its type
         img_size (int): size of the image, only relevant if use_img_obs is true
         resample_on_fail (bool): if true resamples new seed to create new traj otherwise raises error
     """
 
     set_seed(seed)
 
-    if "FixInstGoTo" in env_name:
-        env = gym.make(
-            env_name,
-            highlight=False,
-            action_space=action_space,
-            num_dists=num_distractors,
-            action_space_agent_color=use_agent_type,
-        )
-    elif "GoToObjMaze" in env_name:
-        env = gym.make(
-            env_name,
-            highlight=False,
-            action_space=action_space,
-            num_dists=num_distractors,
-            action_space_agent_color=use_agent_type,
-        )
-    elif "BossLevel" in env_name:
-        env = gym.make(
-            env_name,
-            highlight=False,
-            action_space=action_space,
-            action_space_agent_color=use_agent_type,
-        )
-    else:
-        raise NotImplementedError(
-            f"This environment has not been implemented {env_name}"
-        )
-
+    env = gym.make(
+        env_name,
+        highlight=False,
+        action_space=action_space,
+        num_dists=num_distractors,
+        action_space_agent_color=use_agent_type,
+    )
+    
+    
     # Apply Wrapper (image or state as obs)
     if use_img_obs:
         env = RGBImgObsWrapper(env, tile_size=img_size // env.unwrapped.width)
@@ -178,52 +152,57 @@ def generate_demos(
     num_workers: int,
     data_dir: str,
     env: str,
-    env_name: str,
     action_space: ActionSpace,
     minimum_length: int,
     max_steps: int,
     seed: int,
+    img_size: int,
     use_img_obs: bool,
     num_distractors: int,
-    debug: bool,
     use_agent_type: bool = False,
-    img_size: int = None,
     resample_on_fail: bool = True,
-    save_data: bool = True,
     part: int = -1,
 ):
-    
+    # Pick an environment
+    if env == "GOTO" or env == "GOTO_DISTRACTORS":
+        envs = FIXINSTGOTO_ENVS
+    elif env == "GOTO_DISTRACTORS_LARGE":
+        envs = ["BabyAI-GoToObjMazeS7-v0"]
+    else:
+        raise NotImplementedError(
+            f"This environment has not been implemented {env}"
+        )
+
     all_demos = []
     for e in envs:
         demos = generate_demos_env(
             n_episodes,
             num_workers,
-            data_dir,
-            env,
             e,
             action_space,
-            minimum_length=config["minimum_length"],
-            max_steps=config["max_steps"],
-            seed=config["seed"],
-            img_size=config["img_size"],
-            use_img_obs=config["use_img_obs"],
-            num_distractors=config["num_distractors"],
-            use_agent_type=config["use_agent_type"],
-            part=config["part"],
+            minimum_length,
+            max_steps,
+            seed,
+            use_img_obs,
+            num_distractors,
+            use_agent_type,
+            img_size,
+            resample_on_fail,
+            part
         )
 
         all_demos += demos
 
-    if config["part"] == -1:
-        dataset_name = f"{config['action_space'].name}_{config['n_episodes']}_{config['minimum_length']}_{config['num_distractors']}_{config['use_agent_type']}_demos"
+    if part == -1:
+        dataset_name = f"{action_space.name}_{n_episodes}_{minimum_length}_{num_distractors}_{use_agent_type}_demos"
     else:
-        dataset_name = f"{config['action_space'].name}_{config['n_episodes']}_{config['minimum_length']}_{config['num_distractors']}_{config['use_agent_type']}_demos_{config['part']}"
+        dataset_name = f"{action_space.name}_{n_episodes}_{minimum_length}_{num_distractors}_{use_agent_type}_demos_{part}"
 
     filepath = os.path.join(
-        config["data_directory"],
-        config["env"],
+        data_dir,
+        env,
         dataset_name,
-        f"dataset_{config['n_episodes']}.pkl",
+        f"dataset_{n_episodes}.pkl",
     )
 
     with open(filepath, "wb") as file:
@@ -233,8 +212,6 @@ def generate_demos(
 def generate_demos_env(
     n_episodes: int,
     num_workers: int,
-    data_dir: str,
-    env: str,
     env_name: str,
     action_space: ActionSpace,
     minimum_length: int,
@@ -242,11 +219,9 @@ def generate_demos_env(
     seed: int,
     use_img_obs: bool,
     num_distractors: int,
-    debug: bool,
     use_agent_type: bool = False,
     img_size: int = None,
     resample_on_fail: bool = True,
-    save_data: bool = True,
     part: int = -1,
 ):
     """
@@ -255,36 +230,36 @@ def generate_demos_env(
     Args:
         n_episodes (int): number of episodes to generate
         num_workers: number of workers to use for multiprocessing
-        data_dir (str): path where generated data should be stored in baby_ai subdir
         env_name (str): the name of the environment (without prefixes and suffixes)
         action_space (ActionSpace): action space
         minimum_length (int): minimum length of the episode (otherwise it is discarded)
+        max_steps (int): maximum number of steps possible in the episode
         seed (int): starting seed
         use_img_obs (bool): if true uses image observation otherwise uses fully obs state space
-        debug (bool): debug flag
+        num_distractors (int): number of distractors in the environment
+        use_agent_type (bool): if true give the agent a colour depending on its type
         img_size (int): size of the image, only relevant if use_img_obs is true
         resample_on_fail (bool): if true resamples new seed to create new traj otherwise raises error
+        part (int): which part of the dataset to generate
     """
 
-    checkpoint_time = time.time()
-
-    demos = []
-
+    # Make sure that different parts have different seeds
     if part == -1:
         constant = 0
     else:
         constant = (2 * n_episodes) * part
 
     seeds = range(seed + constant, seed + constant + 2 * n_episodes)
-    print("Generated seeds")
-    print(mp.cpu_count())
-    pool = mp.Pool(processes=mp.cpu_count())
-
+    
+    if num_workers == -1:
+        num_workers = mp.cpu_count()
+    
+    demos = []
     n_generated_episodes = 0
     pbar = tqdm(total=n_episodes)
     batch_size = 10000
     while n_generated_episodes < n_episodes:
-        pool = mp.Pool(processes=mp.cpu_count())
+        pool = mp.Pool(processes=num_workers)
         results = [
             pool.apply_async(
                 generate_episode,
@@ -296,7 +271,6 @@ def generate_demos_env(
                     seed,
                     use_img_obs,
                     num_distractors,
-                    debug,
                     use_agent_type,
                     img_size,
                     resample_on_fail,
@@ -313,85 +287,15 @@ def generate_demos_env(
                 pbar.update()
                 wandb.log({"n_episodes": n_generated_episodes})
             except Exception as e:
-                print("Timeout")
+                logging.error("Timeout")
                 continue
 
         pool.close()
 
     demos = demos[:n_episodes]
 
-    # log how long it took
-    now = time.time()
-    total_time = now - checkpoint_time
-    print(f"total_time: {total_time}")
-
-    # Save last batch of demos
-    print("Saving demos...")
-    if part == -1:
-        demos_path = f"{data_dir}/{env}/{action_space.name}_{n_episodes}_{minimum_length}_{num_distractors}_{use_agent_type}_demos"
-    else:
-        demos_path = f"{data_dir}/{env}/{action_space.name}_{n_episodes}_{minimum_length}_{num_distractors}_{use_agent_type}_demos_{part}"
-
-    if not os.path.exists(demos_path):
-        os.makedirs(demos_path)
-
-    if debug:
-        demos_path = demos_path + f"_debug.pkl"
-    elif env_name:
-        demos_path = demos_path + f"/{env_name}.pkl"
-
-    with open(demos_path, "wb+") as file:
-        pickle.dump(demos, file)
-
     return demos
 
-
-def check_subsequence(subsequence, action_space):
-    if len(subsequence) < 3:
-        return False
-    print([int(elem) for elem in subsequence])
-    if action_space == 0:
-        # It should contain either a turn left or turn right
-        subsequence = [int(elem) for elem in subsequence]
-        action_types = set(subsequence)
-        if 1 in action_types or 0 in action_types:
-            return True
-
-    elif action_space == 1:
-        # It should contain three right turns
-        subsequence = [int(elem) for elem in subsequence]
-        action_types = set(subsequence)
-        if 1 in action_types and len(action_types) == 1:
-            return True
-
-    elif action_space == 2:
-        # It should contain three left turns
-        subsequence = [int(elem) for elem in subsequence]
-        action_types = set(subsequence)
-        if 0 in action_types and len(action_types) == 1:
-            return True
-
-    elif action_space == 3:
-        # It should contain a diagonal
-        subsequence = [int(elem) for elem in subsequence]
-        action_types = set(subsequence)
-        print(action_types)
-        if 7 in action_types or 8 in action_types:
-            return True
-
-    return False
-
-
-def check_condition(examples, n_examples):
-    print("Check conditions")
-    if len(examples) < 4:
-        return False
-
-    for i, value in examples.items():
-        print(i, len(value))
-        if len(value) < n_examples:
-            return False
-    return True
 
 
 if __name__ == "__main__":
@@ -431,51 +335,40 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    logging.basicConfig()
-    logging.getLogger().setLevel(logging.ERROR)
-
+    # Load config
     with open(args.config, "r") as file:
         config = yaml.safe_load(file)
 
-    wandb.init(
-        project=config["logging"]["project"], name=config["logging"]["experiment_name"]
-    )
-    wandb.config.update(config)
-
+    # Integrate CLI arguments
     if args.n_episodes != None:
         config["n_episodes"] = args.n_episodes
 
     if args.n_dists != None:
         config["num_distractors"] = args.n_dists
 
-    if args.part != None:
-        config["part"] = args.part
-
-    # Pick an environment
-    if config["env"] == "GOTO":
-        envs = FIXINSTGOTO_ENVS
-    elif config["env"] == "GOTO_LARGE":
-        envs = ["BabyAI-GoToObjMazeS7-v0"]
-    elif config["env"] == "BOSSLEVEL":
-        envs = ["BabyAI-BossLevel-v0"]
-    else:
-        raise NotImplementedError(
-            f"This environment has not been implemented {config['env']}"
-        )
-
-    # Register necessary envs with gym, not yet part of the register
-    register_envs()
     if args.action_space != None:
         config["action_space"] = ActionSpace(args.action_space)
     else:
         config["action_space"] = ActionSpace(config["action_space"])
+    
+    # Set up logging
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.ERROR)
+    wandb.init(
+        project=config["logging"]["project"],
+        name=config["logging"]["experiment_name"]
+    )
+    wandb.config.update(config)
 
+    # Register necessary envs with gym, not yet part of the register
+    register_envs()
+    
+    # Generate demos
     generate_demos(
         n_episodes=config["n_episodes"],
         num_workers=config["num_workers"],
         data_dir=config["data_directory"],
         env=config["env"],
-        env_names=envs,
         action_space=config["action_space"],
         minimum_length=config["minimum_length"],
         max_steps=config["max_steps"],
