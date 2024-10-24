@@ -40,7 +40,7 @@ The resulting pickle file contains a list of tuples and will be stored in a fold
 - rewards: `list[floats]`
 - action_space: `int`
 
-To generate the dataset for all action space and create the mixture dataset run:
+To generate the dataset for all action spaces and pool all datasets from the in-distribution agents (0-5) to create the mixture dataset run:
 
 `bash ./scripts/data_generation.sh`
 
