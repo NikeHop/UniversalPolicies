@@ -7,11 +7,10 @@ from torch.optim import Adam
 from einops import rearrange
 
 from minigrid.core.actions import ActionSpace
-from diffusion_nl.utils.networks import ResidualBlock
 
 
-############################################ Lightning Modules ############################################
 
+############################################ Lightning Module ############################################
 
 class ImitationPolicy(pl.LightningModule):
 
@@ -23,74 +22,83 @@ class ImitationPolicy(pl.LightningModule):
         self.use_agent_id = config["model"]["use_agent_id"]
         self.action_space = ActionSpace(config["model"]["action_space"])
         self.legal_actions = self.action_space.get_legal_actions()
-        
+
         self.global2local = {action: i for i, action in enumerate(self.legal_actions)}
         self.local2global = {i: action for i, action in enumerate(self.legal_actions)}
-        self.model = ImitationPolicyModel(config["goal_type"],len(self.legal_actions),config["model"]["use_agent_id"],config["model"]["use_unique_agent_heads"])
+        self.model = ImitationPolicyModel(
+            config["goal_type"],
+            len(self.legal_actions),
+            config["model"]["use_agent_id"],
+            config["model"]["use_unique_agent_heads"],
+        )
         self.loss = nn.CrossEntropyLoss()
 
-    def training_step(self, batch, batch_idx):
-        obss, goals, global_gt_actions, agent_ids = batch
-        local_gt_actions = torch.tensor([self.global2local[a.item()] for a in global_gt_actions]).to(global_gt_actions.device)
-
-        action_probs = self.model(obss,goals,agent_ids)
-
-        # Compute Loss
-        loss = self.loss(action_probs, local_gt_actions)
-        self.log("training/loss", loss)
-
-        # Determine Accuracy
-        acc = (torch.argmax(action_probs, dim=-1) == local_gt_actions).float().mean()
-        self.log("training/acc", acc)
-
-        return loss
-
-    def validation_step(self, batch, batch_idx):
+    def step(self,batch,step_type):
         obss, goals, global_gt_actions, agent_ids = batch
         local_gt_actions = torch.tensor(
             [self.global2local[a.item()] for a in global_gt_actions]
         ).to(global_gt_actions.device)
 
-        action_probs = self.model(obss,goals,agent_ids)
+        action_probs = self.model(obss, goals, agent_ids)
 
         # Compute Loss
         loss = self.loss(action_probs, local_gt_actions)
-        self.log("validation/loss", loss)
+        self.log(f"{step_type}/loss", loss)
 
         # Determine Accuracy
         acc = (torch.argmax(action_probs, dim=-1) == local_gt_actions).float().mean()
-        self.log("validation/acc", acc)
+        self.log(f"{step_type}/acc", acc)
 
+        return loss
+
+    def training_step(self, batch, batch_idx):
+        loss = self.step(batch,"training")
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        self.step(batch,"validation")
+        
     def configure_optimizers(self):
         return Adam(self.model.parameters(), lr=self.lr)
 
-    def load_embedding_model(self,encoder_model,tokenizer,device):
+    def load_embedding_model(self, encoder_model, tokenizer, device):
         self.encoder_model = encoder_model.to(device)
         self.tokenizer = tokenizer
 
-    def act(self,obss,agent_ids,device):
-        # Create agent ids 
-  
+    def act(self, obss, agent_ids, device):
+        # Create agent ids
         agent_ids = agent_ids.to(device)
-        
-        # Create the obs and goals 
+
+        # Embed Instructions
         goals = [obs["mission"] for obs in obss]
-        inputs = self.tokenizer(goals, padding=True, return_tensors="pt",truncation=True).to(device)
-        goals = self.encoder_model(input_ids=inputs["input_ids"],attention_mask=inputs["attention_mask"]).last_hidden_state.mean(dim=1).to(device)
-    
-        obss = torch.stack([torch.from_numpy(obs["image"]).float() for obs in obss],dim=0).to(device)
+        inputs = self.tokenizer(
+            goals, padding=True, return_tensors="pt", truncation=True
+        ).to(device)
+        goals = (
+            self.encoder_model(
+                input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"]
+            )
+            .last_hidden_state.mean(dim=1)
+            .to(device)
+        )
+
+        # Current Observation
+        obss = torch.stack(
+            [torch.from_numpy(obs["image"]).float() for obs in obss], dim=0
+        ).to(device)
         obss = rearrange(obss, "B H W C -> B C H W")
-        
-        action_probs = self.model(obss,goals,agent_ids)
+
+        action_probs = self.model(obss, goals, agent_ids)
         local_actions = action_probs.argmax(dim=-1)
         global_actions = torch.tensor(
             [self.local2global[l.item()] for l in local_actions]
         )
-        
+
         return global_actions
 
 
 ############################################ Network Modules ############################################
+
 
 class ImitationPolicyModel(nn.Module):
     def __init__(self, goal_type, n_actions, use_agent_id, use_unique_agent_heads):
@@ -111,7 +119,9 @@ class ImitationPolicyModel(nn.Module):
             for action_space in ActionSpace:
                 action_space = ActionSpace(action_space)
                 legal_actions = action_space.get_legal_actions()
-                local2global = {i: int(action) for i, action in enumerate(legal_actions)}
+                local2global = {
+                    i: int(action) for i, action in enumerate(legal_actions)
+                }
                 self.agent_id2actionspace[str(action_space.value)] = local2global
                 agent_n_actions = len(local2global)
                 self.agentid2policy[str(action_space.value)] = nn.Sequential(
@@ -119,8 +129,6 @@ class ImitationPolicyModel(nn.Module):
                     nn.Tanh(),
                     nn.Linear(64, agent_n_actions),
                 )
-        
-   
 
         self.policy = nn.Sequential(
             nn.Linear(input_dim, 64),
@@ -129,34 +137,40 @@ class ImitationPolicyModel(nn.Module):
         )
 
     def forward(self, obss, goals, agent_ids):
-
-        # Encode Obs with Instructions 
+        # Encode Obs with Instructions
         obss = self.img_encoder(obss, goals)
 
-        # Apply Policy Head 
+        # Add agent ID to encoded observation
         if self.use_agent_id:
             agent_ids = F.one_hot(agent_ids, num_classes=8)
-            obss = torch.cat([obss,agent_ids],dim=1)
+            obss = torch.cat([obss, agent_ids], dim=1)
 
         if self.use_unique_agent_heads:
-            predicted_actions = -float("inf")*torch.ones((obss.shape[0],self.n_actions),requires_grad=True).to(obss.device)
+            # Agent-specific policy heads
+            predicted_actions = -float("inf") * torch.ones(
+                (obss.shape[0], self.n_actions), requires_grad=True
+            ).to(obss.device)
+
+            # Apply policy head for each agent id 
             for agent_id in self.agent_id2actionspace.keys():
                 agent_policy = self.agentid2policy[agent_id]
                 local2globalactions = self.agent_id2actionspace[agent_id]
-                mask = int(agent_id )== agent_ids
+                mask = int(agent_id) == agent_ids
                 agent_obss = obss[mask]
                 if mask.sum() > 0:
                     action_space_predicted_actions = agent_policy(agent_obss)
                     for local_action, global_action in local2globalactions.items():
-                        predicted_actions[mask,global_action] = action_space_predicted_actions[:,local_action] 
-                
-                        
+                        predicted_actions[mask, global_action] = (
+                            action_space_predicted_actions[:, local_action]
+                        )
 
         else:
+            # One policy head for all agents
             predicted_actions = self.policy(obss)
 
         return predicted_actions
 
+########### The FILM layer is taken from: https://github.com/mila-iqia/babyai/blob/master/babyai/model.py ################
 
 class FiLM(nn.Module):
     def __init__(self, in_features, out_features, in_channels, imm_channels):
@@ -192,11 +206,11 @@ class FiLM(nn.Module):
 
 class ImageEncoderBabyAI(nn.Module):
 
-    def __init__(self,goal="language"):
+    def __init__(self, goal="language"):
 
         super().__init__()
 
-        self.goal = goal 
+        self.goal = goal
 
         layers = [
             nn.Conv2d(
@@ -210,7 +224,7 @@ class ImageEncoderBabyAI(nn.Module):
         ]
 
         self.conv = nn.Sequential(*layers)
-        self.projection = nn.Linear(8192,512)
+        self.projection = nn.Linear(8192, 512)
         self.film1 = FiLM(
             in_features=512, out_features=128, in_channels=128, imm_channels=128
         )
@@ -226,7 +240,7 @@ class ImageEncoderBabyAI(nn.Module):
     def forward(self, x, goal):
         # Encode current observation
         x = self.conv(x)
-        if self.goal=="obs":
+        if self.goal == "obs":
             goal = self.conv(goal).flatten(1, 3)
             goal = self.projection(goal)
 
@@ -239,7 +253,9 @@ class ImageEncoderBabyAI(nn.Module):
             x = self.pool(x)
         return x.flatten(1, 3)
 
+
 #################################### Functions ####################################
+
 
 def initialize_parameters(m):
     classname = m.__class__.__name__

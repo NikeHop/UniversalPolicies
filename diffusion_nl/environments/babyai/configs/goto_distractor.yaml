@@ -1,7 +1,7 @@
 ---
 action_space: 0
 data_directory: ../../../data
-env: GOTO_DISTRACTOR
+env: GOTO_DISTRACTORS
 fig_directory: ../figures/baby_ai
 img_size: 128
 max_steps: 25

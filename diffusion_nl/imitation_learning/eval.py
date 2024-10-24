@@ -1,23 +1,21 @@
 import argparse
-import os
+import logging
 import random
+
+from collections import defaultdict
 
 import gymnasium as gym
 import torch 
 import wandb
 import yaml
 
-from collections import defaultdict
-
 from gymnasium.envs.registration import register
 from minigrid.core.actions import ActionSpace
 from minigrid.core.constants import COLOR_NAMES
-from minigrid.wrappers import RGBImgObsWrapper, FullyObsWrapper
+from minigrid.wrappers import FullyObsWrapper
 from transformers import AutoTokenizer, T5EncoderModel
-from torchvision.io import write_video
 
 from diffusion_nl.imitation_learning.model import ImitationPolicy
-from diffusion_nl.diffusion_model.utils import state2img
 from diffusion_nl.utils.utils import set_seed
 from diffusion_nl.utils.environments import FIXINSTGOTO_ENVS
 
@@ -115,7 +113,7 @@ def eval(config,agent=None):
         rewards.append(max(total_rewards[i]))
         completions.append(any(completion_rate[i]))
 
-    print(rewards, completions)
+    logging.info(f"Rewards: {rewards}, Completions: {completions}")
 
     wandb.log(
         {
@@ -165,6 +163,7 @@ if __name__=="__main__":
         config["logging"]["experiment_name"] = args.experiment_name
 
     wandb.init(
+        mode=config["logging"]["mode"],
         project=config["logging"]["project"],
         name=config["logging"]["experiment_name"],
     )

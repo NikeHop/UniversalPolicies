@@ -9,7 +9,7 @@ from pytorch_lightning.utilities.seed import isolate_rng
 import wandb
 
 from diffusion_nl.ivd_model.data import get_data
-from diffusion_nl.ivd_model.model import IVDBabyAI, IVDCalvin
+from diffusion_nl.ivd_model.model import IVDBabyAI
 from diffusion_nl.utils.utils import set_seed
 
 def train_ivd(config):
@@ -33,10 +33,6 @@ def train_ivd(config):
         if config["data"]["dataset"] == "babyai":
             IVD = IVDBabyAI
             action_space = config["model"]["action_space"]
-
-        elif config["data"]["dataset"] == "calvin":
-            IVD = IVDCalvin
-            action_space = config["model"]["action_dim"]
         else:
             raise NotImplementedError(f"Unknown model {config['data']['dataset']}")
         
@@ -125,6 +121,7 @@ if __name__ == "__main__":
 
     # Setup wandb project
     wandb.init(
+        mode=config["logging"]["mode"],
         project=config["logging"]["project"],
         name=config["logging"]["experiment_name"]
     )

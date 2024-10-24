@@ -1,24 +1,23 @@
 import random
-from time import time
 import os
 import pickle
 
 import blosc
 import torch
-import torch.nn as nn 
+import torch.nn as nn
 import torch.nn.functional as F
-import tqdm 
+import tqdm
 
 from transformers import AutoTokenizer, T5EncoderModel
 from torch.utils.data import DataLoader, Dataset, random_split
 
 
 class ImitationGoalObsDataset(Dataset):
-    def __init__(self, data,max_gap=1):
+    def __init__(self, data, max_gap=1):
         self.data = data
         self.max_gap = max_gap
 
-    def __getitem__(self,idx):
+    def __getitem__(self, idx):
         trajectory_info = self.data[idx]
         obss = blosc.unpack_array(trajectory_info[2])
         actions = trajectory_info[-3]
@@ -26,9 +25,9 @@ class ImitationGoalObsDataset(Dataset):
 
         t = obss.shape[0]
         start_timestep = random.randint(0, t - 2)
-        gap = random.randint(1,self.max_gap)
-        goal_timestep = min(start_timestep + gap,t-1)
-        
+        gap = random.randint(1, self.max_gap)
+        goal_timestep = min(start_timestep + gap, t - 1)
+
         obs = obss[start_timestep]
         goal = obss[goal_timestep]
         action = actions[start_timestep]
@@ -37,6 +36,7 @@ class ImitationGoalObsDataset(Dataset):
 
     def __len__(self):
         return len(self.data)
+
 
 class ImitationInstructionDataset(Dataset):
     def __init__(self, data, inst2embeddings):
@@ -60,11 +60,9 @@ class ImitationInstructionDataset(Dataset):
 
         return obs, instruction, action, agent_id
 
-    def load_embedings(self,embedding_path):
-        pass
-
     def __len__(self):
         return len(self.data)
+
 
 def collate_goal(data):
     obss, goals, actions, agent_ids = [], [], [], []
@@ -75,14 +73,14 @@ def collate_goal(data):
         goals.append(goal)
         actions.append(action)
         agent_ids.append(agent_id)
-    
+
     obss = torch.stack(obss, dim=0)
     goals = torch.stack(goals, dim=0)
     actions = torch.tensor(actions, dtype=torch.long)
-    agent_ids = F.one_hot(torch.tensor(agent_ids, dtype=torch.long),num_classes=8)
-    print(agent_ids.shape)
+    agent_ids = F.one_hot(torch.tensor(agent_ids, dtype=torch.long), num_classes=8)
 
     return obss, goals, actions, agent_ids
+
 
 def collate_instruction(data):
     obss, instructions, actions, agent_ids = [], [], [], []
@@ -95,23 +93,21 @@ def collate_instruction(data):
 
     obss = torch.stack(obss, dim=0)
     instructions = torch.stack(instructions, dim=0)
-    #print(actions,agent_ids)
     actions = torch.tensor(actions, dtype=torch.long)
     agent_ids = torch.tensor(agent_ids, dtype=torch.long)
-    
-
 
     return obss, instructions, actions, agent_ids
+
 
 def get_data_goal_language_policy(config):
     # Load data
     with open(
-        os.path.join(config["data"]["directory"], config["data"]["filename"]), "rb"
+        os.path.join(config["data"]["datapath"], config["data"]["filename"]), "rb"
     ) as file:
         data = pickle.load(file)
 
     # Create inst2embeddings
-    inst2embeddings = get_embeddings(data,config)
+    inst2embeddings = get_embeddings(data, config)
 
     # Create dataset
     dataset = ImitationInstructionDataset(data, inst2embeddings)
@@ -133,6 +129,40 @@ def get_data_goal_language_policy(config):
         test_dataset,
         shuffle=False,
         collate_fn=collate_instruction,
+        batch_size=config["data"]["batch_size"],
+        pin_memory=True,
+    )
+
+    return train_dataloader, test_dataloader
+
+
+def get_data_goal_obs_policy(config):
+    # Load data
+    with open(
+        os.path.join(config["data"]["directory"], config["data"]["filename"]), "rb"
+    ) as file:
+        data = pickle.load(file)
+
+    # Create dataset
+    dataset = ImitationGoalObsDataset(data, config["data"]["max_gap"])
+
+    n = len(dataset)
+    n_train = int(n * config["data"]["percentage"])
+    n_test = n - n_train
+    train_dataset, test_dataset = random_split(dataset, [n_train, n_test])
+
+    train_dataloader = DataLoader(
+        train_dataset,
+        shuffle=True,
+        collate_fn=collate_goal,
+        batch_size=config["data"]["batch_size"],
+        pin_memory=True,
+    )
+
+    test_dataloader = DataLoader(
+        test_dataset,
+        shuffle=False,
+        collate_fn=collate_goal,
         batch_size=config["data"]["batch_size"],
         pin_memory=True,
     )
@@ -204,46 +234,10 @@ def get_t5_embeddings(instructions, config):
     return inst2embed
 
 
-def get_data_goal_obs_policy(config):
-    # Load data
-    with open(os.path.join(config["data"]["directory"], config["data"]["filename"]), "rb") as file:
-        data = pickle.load(file)
-
-    # Create dataset
-    dataset = ImitationGoalObsDataset(data,config["data"]["max_gap"])
-
-    n = len(dataset)
-    n_train = int(n * config["data"]["percentage"])
-    n_test = n - n_train
-    train_dataset, test_dataset = random_split(dataset, [n_train, n_test])
-
-    train_dataloader = DataLoader(
-        train_dataset,
-        shuffle=True,
-        collate_fn=collate_goal,
-        batch_size=config["data"]["batch_size"],
-        pin_memory=True,
-    )
-
-    test_dataloader = DataLoader(
-        test_dataset,
-        shuffle=False,
-        collate_fn=collate_goal,
-        batch_size=config["data"]["batch_size"],
-        pin_memory=True,
-    )
-
-    return train_dataloader, test_dataloader
-
-
 def get_data(config):
-    if config["goal_type"]=="obs":
+    if config["goal_type"] == "obs":
         return get_data_goal_obs_policy(config)
-    elif config["goal_type"]=="language":
+    elif config["goal_type"] == "language":
         return get_data_goal_language_policy(config)
     else:
         raise NotImplementedError("Goal type not implemented")
-
-
-if __name__ == "__main__":
-    pass

@@ -4,11 +4,14 @@
 
 ## Prerequisites & Dependencies
 
+
+All of the logging is done via [WandB](https://wandb.ai/site/), but needs to be enabled in the config files.
+
 ## Run Experiments 
 
 ### Generate Demonstrations 
 
-To generate the demonstration datasets for the different environments and different actions spaces, run:
+The code to generate demonstrations can be found in the `./diffusion_nl/environments/babyai` folder all following commands should be run from there. To generate the demonstration datasets for the different environments and different actions spaces, run:
 
 `python generate_demos.py --config ./configs/CONFIG_FILE --action_space 0`.
 
@@ -48,9 +51,9 @@ To generate the dataset for all action spaces and pool all datasets from the in-
 
 ### Train Inverse Dynamics Models 
 
-To train an inverse dynamics model for a given action space in a specific environment modify the action space and datapath argument in `./configs/ivd.yaml` and run 
+The code for the inverse dynamics models can be found in `./diffusion_nl/ivd_model`. All the following commands should be run from there. To train an inverse dynamics model for a given action space on a specific dataset run:
 
-`python train.py ./configs/ivd.yaml`
+`python train.py ./configs/ivd.yaml --datapath ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl --action_space 0`
 
 To train an ivd for all available action spaces in an instance of the BabyAI environment, add the corresponding datapaths to the script `./scripts/train_ivds.sh` and run:
 
@@ -60,8 +63,15 @@ To train an ivd for all available action spaces in an instance of the BabyAI env
 
 ### Train Imitation Learning Policy
 
+The code for the inverse dynamics models can be found in `./diffusion_nl/imitation_learning`. All the following commands should be run from there. To train the imitation learning baselines on a specific dataset for a specific action space run 
+
+`python train.py --config ./configs/instruction_imitation_goto.yaml --datapath ./data/GOTO/`
+
+
+After training the model is evaluate over 512 evaluation episodes. 
+
 ## Trained Models 
 
-We make the trained inverse dynamics models, imitation learning baselines and diffusion planners available here.
+We make the trained inverse dynamics models, imitation learning baselines and diffusion planners for a single random seed available here.
 
 

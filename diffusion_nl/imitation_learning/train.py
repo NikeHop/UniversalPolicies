@@ -95,7 +95,7 @@ if __name__ == "__main__":
         help="maximum timegap between observation and goal",
     )
     parser.add_argument("--action_space", type=int, default=None, help="Action space")
-    parser.add_argument("--datadirectory",type=str,default=None,help="Directory to save data")
+    parser.add_argument("--datapath",type=str,default=None,help="Path to training dataset")
     parser.add_argument("--experiment_name",type=str,default="",help="Name of the experiment")
     parser.add_argument("--device", type=str, default=None, help="Device to run the model on")
     parser.add_argument("--checkpoint", type=str, default=None, help="Checkpoint to load")
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         config["eval"]["action_space"] = args.action_space
     
     if args.datadirectory is not None:
-        config["data"]["directory"] = args.datadirectory
+        config["data"]["datapath"] = args.datapath
     
 
     if args.device is not None:
@@ -122,7 +122,6 @@ if __name__ == "__main__":
         config["eval"]["device"] = f"cuda:{args.device}"
         config["embeddings"]["device"] = f"cuda:{args.device}"
 
-    print(config["training"]["gpus"],config["eval"]["device"])
 
     if args.checkpoint is not None:
         config["model"]["load"]["load"] = True

@@ -28,33 +28,17 @@ class IVDBabyAI(pl.LightningModule):
         ).to(global_actions.device)
         action_probs = self.model(obs1, obs2)
         loss = self.loss(action_probs, local_actions)
-        self.log(f"t/loss", loss)
+        self.log(f"{step_type}/loss", loss)
         acc = (torch.argmax(action_probs, dim=1) == local_actions).float().mean()
-        self.log("training/acc", acc)
+        self.log(f"{step_type}/acc", acc)
+        return loss 
 
     def training_step(self, batch, batch_idx):
-        obs1, obs2, global_actions = batch
-        local_actions = torch.tensor(
-            [self.global2local[a.item()] for a in global_actions]
-        ).to(global_actions.device)
-        action_probs = self.model(obs1, obs2)
-        loss = self.loss(action_probs, local_actions)
-        self.log("training/loss", loss)
-        acc = (torch.argmax(action_probs, dim=1) == local_actions).float().mean()
-        self.log("training/acc", acc)
-
+        loss = self.step(batch,"training")
         return loss
 
     def validation_step(self, batch, batch_idx):
-        obs1, obs2, global_actions = batch
-        local_actions = torch.tensor(
-            [self.global2local[a.item()] for a in global_actions]
-        ).to(global_actions.device)
-        action_probs = self.model(obs1, obs2)
-        loss = self.loss(action_probs, local_actions)
-        self.log("validation/loss", loss)
-        acc = (torch.argmax(action_probs, dim=1) == local_actions).float().mean()
-        self.log("validation/acc", acc)
+        self.step(batch,"validation")
 
     def predict(self, obs1, obs2):
         action_probs = self.model(obs1, obs2)

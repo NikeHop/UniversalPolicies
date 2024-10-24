@@ -32,12 +32,12 @@ training:
   max_epochs: 20
 
 logging:
-  entity: Niklas_hop
+  entity: ""
   project: DiffusionMultiAgent
-  mode: online
+  mode: disabled
   model_directory: "../../model_store"
-  experiment_name: "imitation_learning_goal_obs"
-  tags: ["BabyAI","ImitationLearning","GoalObs"]
+  experiment_name: ""
+  tags: [""]
 
 eval:
   eval: True

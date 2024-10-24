@@ -1,6 +1,6 @@
 ---
 seed: 42
-checkpoint: /var/scratch/nrhopner/experiments/diffusion_nl/model_store/imitation_learning_goal_obs/DiffusionMultiAgent/0l344x93/checkpoints/epoch=99-step=11300.ckpt
+checkpoint: ""
 device: "cuda:0"
 
 logging:

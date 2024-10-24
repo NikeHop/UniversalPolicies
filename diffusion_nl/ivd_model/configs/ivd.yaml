@@ -10,7 +10,7 @@ data:
 training:
   distributed: True
   early_stopping: False
-  max_epochs: 100
+  max_epochs: 50
   accelerator: "gpu"
   strategy: "ddp_find_unused_parameters_true"
   gpus: [0]
@@ -22,9 +22,9 @@ model:
     load: False
 
 logging:
-  mode: disabled
+  mode: online
   experiment_name: "train_ivd_model"
   model_directory: "../../model_store"
-  project: ""
+  project: "DiffusionMultiAgent"
   entity: ""
   tags: [""]
