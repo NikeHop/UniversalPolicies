@@ -14,8 +14,8 @@ To generate the demonstration datasets for the different environments and differ
 
 Here `CONFIG_FILE` should be one of:
 - `goto.yaml`: agent needs to go to the object; see [here](https://minigrid.farama.org/environments/babyai/GoToObj/)
-- `goto_distractor.yaml`: agent needs to go to an object with distractors present, see [here](https://minigrid.farama.org/environments/babyai/GoToLocal/)
-- `goto_distractor_large.yaml`, agent needs to go to an object with distractors present navigating through nine rooms see [here](https://minigrid.farama.org/environments/babyai/GoTo/)
+- `goto_distractor.yaml`: agent needs to go to an object with distractors present; see [here](https://minigrid.farama.org/environments/babyai/GoToLocal/)
+- `goto_distractor_large.yaml`, agent needs to go to an object with distractors present navigating through nine rooms; see [here](https://minigrid.farama.org/environments/babyai/GoTo/)
 
 The available action spaces are:
 
@@ -28,11 +28,9 @@ The available action spaces are:
 - 6: left-right, move left and right and turn right
 - 7: all-diagonal, all diagonal cells + turn right
 
-To generate the dataset for eacha action space run:
+If the agent should be coloured differntly depending on the action space used, set the `use_agent_type` argument in the config-file to True. 
 
-`bash ./scripts/data_generation.sh`
-
-The resulting pickle file contains a list of tuples. Each tuple corresponds to an episode. The tuple contains the following values:
+The resulting pickle file contains a list of tuples and will be stored in a folder with the following naming convention: `{action_space}_{n_episodes}_{min_length}_{num_distractors}_{use_agent_type}_demos`. Each tuple corresponds to an episode. The tuple contains the following values:
 
 - instruction `str`
 - environment name: `str`
@@ -42,6 +40,10 @@ The resulting pickle file contains a list of tuples. Each tuple corresponds to a
 - rewards: `list[floats]`
 - action_space: `int`
 
+To generate the dataset for all action space and create the mixture dataset run:
+
+`bash ./scripts/data_generation.sh`
+
 ### Train Diffusion Planner
 
 ### Train Inverse Dynamics Models 
@@ -50,11 +52,11 @@ To train an inverse dynamics model for a given action space in a specific enviro
 
 `python train.py ./configs/ivd.yaml`
 
-To train an ivd for all available action spaces in an instance of the BabyAI environment, add the corresponding datapaths to the script `./scripts/train_ivds.sh`.
+To train an ivd for all available action spaces in an instance of the BabyAI environment, add the corresponding datapaths to the script `./scripts/train_ivds.sh` and run:
 
 `bash ./scripts/train_ivds.sh`
 
-### Evaluate via Diffusion Agent
+### Evaluate via the Diffusion Agent
 
 ### Train Imitation Learning Policy
 

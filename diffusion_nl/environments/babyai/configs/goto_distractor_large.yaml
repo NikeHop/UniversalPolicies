@@ -15,5 +15,6 @@ num_distractors: 7
 use_agent_type: False
 part: -1
 logging:
-  project: DiffusionMultiAgent
-  experiment_name: generate_data_go_to_large
+  mode: disabled
+  project: ""
+  experiment_name: ""

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from minigrid.envs.babyai.core.roomgrid_level import RoomGridLevel
 from minigrid.envs.babyai.core.verifier import GoToInstr, ObjDesc
 from minigrid.core.constants import COLOR_ENV_NAMES, COLOR_NAMES

@@ -7,7 +7,7 @@ from minigrid.core.actions import Actions, NamedActionSpace, ActionSpace
 import torch
 from torchvision.io import write_video
 
-from diffusion_nl.utils.environments import seeding
+from diffusion_nl.utils.utils import set_seed
 
 
 if __name__ == "__main__":
@@ -26,8 +26,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    set_seed(42)
+
     print("The game begins")
-    seeding(42)
     print(NamedActionSpace(args.action_space))
     env = gym.make("BabyAI-GoToObj-v0", action_space=NamedActionSpace(args.action_space), render_mode=args.render_mode, action_space_agent_color=True)
     env = RGBImgObsWrapper(env, tile_size=224 // env.width)

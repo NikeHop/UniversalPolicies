@@ -12,4 +12,8 @@ n_episodes: 5000
 seed: 42
 use_agent_type: True
 use_img_obs: False
-
+part: -1
+logging:
+  mode: disabled
+  project: ""
+  experiment_name: ""

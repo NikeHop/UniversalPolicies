@@ -198,10 +198,11 @@ def generate_demos(
     else:
         dataset_name = f"{action_space.name}_{n_episodes}_{minimum_length}_{num_distractors}_{use_agent_type}_demos_{part}"
 
+    directory_path = os.path.join(data_dir, env, dataset_name)
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
     filepath = os.path.join(
-        data_dir,
-        env,
-        dataset_name,
+        directory_path,
         f"dataset_{n_episodes}.pkl",
     )
 
@@ -301,7 +302,7 @@ def generate_demos_env(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--task", type=str, help="Task to perform", required=True)
+
     parser.add_argument(
         "--config", type=str, help="Path to the config file", required=True
     )
@@ -355,6 +356,7 @@ if __name__ == "__main__":
     logging.basicConfig()
     logging.getLogger().setLevel(logging.ERROR)
     wandb.init(
+        mode=config["logging"]["mode"],
         project=config["logging"]["project"],
         name=config["logging"]["experiment_name"]
     )

@@ -1,74 +1,102 @@
 """
-Merge samples from individual files
+Merge single agent datasets of the in-distribution agents into a mixed dataset.
 """
 
+import argparse
+import logging
 import os
-
-import glob
 import pickle
 
 
-def merge(config):
+def merge(data_dir, n_episodes, use_agent_type, num_distractors, minimum_length):
+    """
+    Merge multiple datasets into a single dataset.
 
+    Args:
+        data_dir (str): The directory where the datasets are located.
+        n_episodes (int): The number of episodes in each dataset.
+        use_agent_type (bool): Whether agents are coloured by type.
+        num_distractors (int): The number of distractors in each episode.
+        minimum_length (int): The minimum length of each episode.
+
+    Returns:
+        None
+    """
+
+    in_dist_action_spaces = [
+        "standard",
+        "no_left",
+        "no_right",
+        "diagonal",
+        "wsad",
+        "dir8",
+    ]
     all_files = []
-    for environment in config["environments"]:
-        files = glob.glob(
-            os.path.join(config["directory"], environment, f"dataset*.pkl")
-        )
-        all_files += files
 
-    print(all_files)
+    for action_space in in_dist_action_spaces:
+        folder_name = f"{action_space}_{n_episodes}_{minimum_length}_{num_distractors}_{use_agent_type}_demos"
+        filename = f"dataset_{n_episodes}.pkl"
+        filepath = os.path.join(data_dir, folder_name, filename)
+        all_files.append(filepath)
+
+    logging.info(f"Merging the following files: {all_files}")
+
     samples = []
     for file in all_files:
         with open(file, "rb") as f:
             data = pickle.load(f)
             samples += data
 
-    if not os.path.exists(config["goal_directory"]):
-        os.makedirs(config["goal_directory"])
+    new_folder = (
+        f"mixed_{n_episodes}_{minimum_length}_{num_distractors}_{use_agent_type}_demos"
+    )
+    new_folder_path = os.path.join(data_dir, new_folder)
+    if not os.path.exists(new_folder_path):
+        os.makedirs(new_folder_path)
 
-    filepath = os.path.join(config["goal_directory"], config["dataset_name"])
+    filepath = os.path.join(new_folder_path, f"dataset_{n_episodes}.pkl")
     with open(filepath, "wb+") as file:
         pickle.dump(samples, file)
 
-def subsample():
-    filepath = "../../../data/BOSSLEVEL/standard_1000000_4_0_False_demos/dataset_1000000.pkl"
 
-    with open(filepath, "rb") as f:
-        data = pickle.load(f)
-        data = data[:50000]
-
-    if not os.path.exists("../../../data/BOSSLEVEL/standard_50000_4_0_False_demos"):
-        os.makedirs("../../../data/BOSSLEVEL/standard_50000_4_0_False_demos")
-
-    goal_filepath = "../../../data/BOSSLEVEL/standard_50000_4_0_False_demos/dataset_50000.pkl"
-    with open(goal_filepath, "wb+") as file:
-        pickle.dump(data, file)
-
-
-    
 if __name__ == "__main__":
 
-    config = {
-        "environments": [
-            "standard_500000_4_0_False_demos",
-            "standard_500000_4_7_False_demos_part_2",
-        ],
-        "directory": "../../../data/BOSSLEVEL",
-        "goal_directory": "../../../data/BOSSLEVEL/standard_1000000_4_0_False_demos",
-        "dataset_name": "dataset_1000000.pkl",
-    }
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--data_dir",
+        type=str,
+        required=True,
+        help="The directory where the datasets are located",
+    )
+    parser.add_argument(
+        "--n_episodes",
+        default=0,
+        type=int,
+        help="Number of episodes in the single dataset dataset",
+    )
+    parser.add_argument(
+        "--use_agent_type",
+        action="store_true",
+        help="Whether the agent is coloured by type",
+    )
+    parser.add_argument(
+        "--num_distractors",
+        default=0,
+        type=int,
+        help="Number of distractors in the environment",
+    )
+    parser.add_argument(
+        "--minimum_length",
+        default=4,
+        type=int,
+        help="Minimum length of an episode",
+    )
+    args = parser.parse_args()
 
-    """
-    [
-            "standard_83000_4_7_False_demos",
-            "no_left_83000_4_7_False_demos",
-            "no_right_83000_4_7_False_demos",
-            "diagonal_83000_4_7_False_demos",
-            "wsad_83000_4_7_False_demos",
-            "dir8_83000_4_7_False_demos",
-    ]
-    """
-    
-    #merge(config)
-    subsample()
+    merge(
+        args.data_dir,
+        args.n_episodes,
+        args.use_agent_type,
+        args.num_distractors,
+        args.minimum_length,
+    )

@@ -8,8 +8,13 @@ max_steps: 25
 minimum_length: 4
 num_distractors: 0
 num_workers: 32
-n_episodes: 5000
+n_episodes: 83
 seed: 42
-use_agent_type: True
+use_agent_type: False
 use_img_obs: False
+part: -1
+logging:
+  mode: disabled
+  project: ""
+  experiment_name: ""
 
