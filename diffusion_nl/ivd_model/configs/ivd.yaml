@@ -2,7 +2,7 @@
 seed: 42
 data:
   dataset: babyai
-  datapath: ../../data/GOTO_DISTRACTOR/standard_5000_4_3_True_demos/dataset_5000.pkl
+  datapath: ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl
   percentage: 0.8
   batch_size: 256
   num_workers: 10
@@ -10,7 +10,7 @@ data:
 training:
   distributed: True
   early_stopping: False
-  max_epochs: 10
+  max_epochs: 100
   accelerator: "gpu"
   strategy: "ddp_find_unused_parameters_true"
   gpus: [0]
@@ -22,6 +22,7 @@ model:
     load: False
 
 logging:
+  mode: disabled
   experiment_name: "train_ivd_model"
   model_directory: "../../model_store"
   project: ""

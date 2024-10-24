@@ -1,19 +1,13 @@
-from cgi import test
-import random
-from time import time
 import os
 import pickle
+import random
 
 import blosc
-import numpy as np
 import torch
-import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset, random_split
 
 
-
 class BabyAI_IVD_Dataset(Dataset):
-
     def __init__(self, data):
         self.data = data
 
@@ -30,7 +24,6 @@ class BabyAI_IVD_Dataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-
 def collate_babyai(data):
     obs1, obs2, actions = [], [], []
     for elem in data:
@@ -44,10 +37,7 @@ def collate_babyai(data):
 
     return obs1, obs2, actions
 
-
-
 def get_data_babyai(config):
-
     # Load data
     with open(os.path.join(config["datapath"]), "rb") as file:
         data = pickle.load(file)
@@ -80,11 +70,9 @@ def get_data_babyai(config):
 
     return train_dataloader, test_dataloader
 
-
 def get_data(config):
     if config["dataset"] == "babyai":
         return get_data_babyai(config)
-
     else:
         raise NotImplementedError(f"Unknown dataset {config['dataset']}")
 
