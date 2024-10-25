@@ -4,7 +4,6 @@ import multiprocessing as mp
 import os
 import pickle
 import random
-import time
 
 import blosc
 import gymnasium as gym
@@ -18,10 +17,9 @@ from minigrid.utils.baby_ai_bot_bfs import BabyAIBot
 from minigrid.wrappers import RGBImgObsWrapper, FullyObsWrapper
 from tqdm import tqdm
 
-from diffusion_nl.utils.environments import FIXINSTGOTO_ENVS
+from diffusion_nl.environments.babyai.goto_specific import register_envs, FIXINSTGOTO_ENVS
 from diffusion_nl.utils.utils import set_seed
 
-from goto_specific import register_envs
 
 
 def generate_episode(

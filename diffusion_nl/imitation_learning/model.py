@@ -8,9 +8,45 @@ from einops import rearrange
 
 from minigrid.core.actions import ActionSpace
 
+############## Licenses ##############
+
+# This FiLM layer and initialize_parameters fn is taken from https://github.com/mila-iqia/babyai/blob/master/babyai/model.py
+# Licensed under the BSD 3-Clause License
+#
+# BSD 3-Clause License
+#
+# Copyright (c) 2017, Maxime Chevalier-Boisvert
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 
 
-############################################ Lightning Module ############################################
+############## Lightning Module ##############
+
 
 class ImitationPolicy(pl.LightningModule):
 
@@ -33,7 +69,7 @@ class ImitationPolicy(pl.LightningModule):
         )
         self.loss = nn.CrossEntropyLoss()
 
-    def step(self,batch,step_type):
+    def step(self, batch, step_type):
         obss, goals, global_gt_actions, agent_ids = batch
         local_gt_actions = torch.tensor(
             [self.global2local[a.item()] for a in global_gt_actions]
@@ -52,12 +88,12 @@ class ImitationPolicy(pl.LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
-        loss = self.step(batch,"training")
+        loss = self.step(batch, "training")
         return loss
 
     def validation_step(self, batch, batch_idx):
-        self.step(batch,"validation")
-        
+        self.step(batch, "validation")
+
     def configure_optimizers(self):
         return Adam(self.model.parameters(), lr=self.lr)
 
@@ -97,7 +133,7 @@ class ImitationPolicy(pl.LightningModule):
         return global_actions
 
 
-############################################ Network Modules ############################################
+############## Network Modules ##############
 
 
 class ImitationPolicyModel(nn.Module):
@@ -151,7 +187,7 @@ class ImitationPolicyModel(nn.Module):
                 (obss.shape[0], self.n_actions), requires_grad=True
             ).to(obss.device)
 
-            # Apply policy head for each agent id 
+            # Apply policy head for each agent id
             for agent_id in self.agent_id2actionspace.keys():
                 agent_policy = self.agentid2policy[agent_id]
                 local2globalactions = self.agent_id2actionspace[agent_id]
@@ -170,7 +206,6 @@ class ImitationPolicyModel(nn.Module):
 
         return predicted_actions
 
-########### The FILM layer is taken from: https://github.com/mila-iqia/babyai/blob/master/babyai/model.py ################
 
 class FiLM(nn.Module):
     def __init__(self, in_features, out_features, in_channels, imm_channels):
@@ -254,7 +289,7 @@ class ImageEncoderBabyAI(nn.Module):
         return x.flatten(1, 3)
 
 
-#################################### Functions ####################################
+############## Functions ##############
 
 
 def initialize_parameters(m):

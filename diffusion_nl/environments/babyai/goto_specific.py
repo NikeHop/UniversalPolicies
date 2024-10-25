@@ -4,6 +4,14 @@ from minigrid.core.constants import COLOR_ENV_NAMES, COLOR_NAMES
 
 from gymnasium.envs.registration import register
 
+FIXINSTGOTO_ENVS = []
+for color in COLOR_ENV_NAMES:
+    print(f"color: {color}")
+    for obj in ["ball", "box", "key"]:
+        FIXINSTGOTO_ENVS.append(
+            f"BabyAI-FixInstGoTo{color.capitalize()}{obj.capitalize()}-v0"
+        )
+
 
 class GoToSpecificObject(RoomGridLevel):
     """
@@ -40,8 +48,8 @@ class GoToSpecificObject(RoomGridLevel):
     """
 
     def __init__(self, color: str, obj: str, room_size=8, num_dists=7, **kwargs):
-        assert color in COLOR_NAMES, f'{color} is not a valid color name'
-        assert obj in ['ball', 'box', 'key'], f'{obj} is not a valid object type'
+        assert color in COLOR_NAMES, f"{color} is not a valid color name"
+        assert obj in ["ball", "box", "key"], f"{obj} is not a valid object type"
         self.num_dists = num_dists
         self.color = color
         self.obj = obj
@@ -50,9 +58,9 @@ class GoToSpecificObject(RoomGridLevel):
 
     def gen_mission(self):
         self.place_agent()
-   
+
         obj, _ = self.add_object(0, 0, self.obj, self.color)
-      
+
         if self.num_dists > 0:
             self.add_distractors(num_distractors=self.num_dists, all_unique=False)
 
@@ -68,12 +76,17 @@ def register_envs(num_dists=7):
     """
     ids = []
     for color in COLOR_ENV_NAMES:
-        for obj in ['ball', 'box', 'key']:
+        for obj in ["ball", "box", "key"]:
             id = f"BabyAI-FixInstGoTo{color.capitalize()}{obj.capitalize()}-v0"
             ids.append(id)
             register(
                 id=id,
                 entry_point="diffusion_nl.environments.babyai.goto_specific:GoToSpecificObject",
-                kwargs={"room_size": 8, "num_dists": num_dists, 'color': color, 'obj': obj},
+                kwargs={
+                    "room_size": 8,
+                    "num_dists": num_dists,
+                    "color": color,
+                    "obj": obj,
+                },
             )
     return ids
