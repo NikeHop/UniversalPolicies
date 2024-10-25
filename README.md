@@ -47,7 +47,6 @@ To generate the dataset for all action spaces and pool all datasets from the in-
 
 `bash ./scripts/data_generation.sh`
 
-### Train Diffusion Planner
 
 ### Train Inverse Dynamics Models 
 
@@ -59,6 +58,9 @@ To train an ivd for all available action spaces in an instance of the BabyAI env
 
 `bash ./scripts/train_ivds.sh`
 
+
+### Train the Diffusion Planner 
+
 ### Evaluate via the Diffusion Agent
 
 ### Train Imitation Learning Policy
@@ -68,10 +70,22 @@ The code for the inverse dynamics models can be found in `./diffusion_nl/imitati
 `python train.py --config ./configs/instruction_imitation_goto.yaml --datapath ./data/GOTO/`
 
 
-After training the model is evaluate over 512 evaluation episodes. 
+After training the model is evaluated over 512 evaluation episodes onb the action space set in the config file. 
+
+### Evaluate Imitation Learning Policy
 
 ## Trained Models 
 
-We make the trained inverse dynamics models, imitation learning baselines and diffusion planners for a single random seed available here.
+We make the trained inverse dynamics models, imitation learning baselines and diffusion planners for a single random seed in the GOTO environment available [here](https://drive.google.com/file/d/1aX9sYjRN3iFYyGr9mHpo41plymyy1qnt/view?usp=drive_link).
 
 
+## Acknowledgements 
+
+The code was written using code elements from the following repositories:
+
+- [https://github.com/labmlai/annotated_deep_learning_paper_implementations](https://github.com/labmlai/annotated_deep_learning_paper_implementations) (MIT License)
+- [https://github.com/NVlabs/edm](https://github.com/NVlabs/edm) (CC BY-NC-SA 4.0)
+- [https://github.com/mila-iqia/babyai](https://github.com/mila-iqia/babyai) (BSD 3-Clause License)
+
+
+The licenses and copyright notices can be found in the respective code files.

@@ -101,9 +101,7 @@ def collate_instruction(data):
 
 def get_data_goal_language_policy(config):
     # Load data
-    with open(
-        os.path.join(config["data"]["datapath"], config["data"]["filename"]), "rb"
-    ) as file:
+    with open(config["data"]["datapath"], "rb") as file:
         data = pickle.load(file)
 
     # Create inst2embeddings
@@ -138,9 +136,7 @@ def get_data_goal_language_policy(config):
 
 def get_data_goal_obs_policy(config):
     # Load data
-    with open(
-        os.path.join(config["data"]["directory"], config["data"]["filename"]), "rb"
-    ) as file:
+    with open(config["data"]["directory"], "rb") as file:
         data = pickle.load(file)
 
     # Create dataset

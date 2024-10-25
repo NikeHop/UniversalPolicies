@@ -15,12 +15,11 @@ from minigrid.core.constants import COLOR_NAMES
 from minigrid.wrappers import FullyObsWrapper
 from transformers import AutoTokenizer, T5EncoderModel
 
+from diffusion_nl.environments.babyai.goto_specific import FIXINSTGOTO_ENVS
 from diffusion_nl.imitation_learning.model import ImitationPolicy
 from diffusion_nl.utils.utils import set_seed
-from diffusion_nl.utils.environments import FIXINSTGOTO_ENVS
 
 def eval(config,agent=None):
-
     # Load policy
     if agent is None:
         agent = ImitationPolicy.load_from_checkpoint(config["checkpoint"],map_location=config["device"])
@@ -47,24 +46,13 @@ def eval(config,agent=None):
             for env_name in env_names
         ]
 
-    elif config["env"] == "bosslevel":
-        env_name = config["env_name"]
-        envs = [
-            FullyObsWrapper(
-                gym.make(
-                    env_name,
-                    action_space=action_space,
-                    num_dists=config["num_distractors"],
-                )
-            )
-            for _ in range(config["num_envs"])
-        ]
-
+    # Prepare statistics
     total_rewards = defaultdict(list)
     completion_rate = defaultdict(list)
     trajectories = defaultdict(list)
     agent_ids = torch.tensor([config["action_space"] for _ in range(config["num_envs"])],dtype=torch.long)
     
+    # For each batch of episodes
     for _ in range(config["evaluation_episodes"]):
         # Reset the environments
         all_done = False

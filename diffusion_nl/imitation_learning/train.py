@@ -106,6 +106,9 @@ if __name__ == "__main__":
         config = yaml.safe_load(file)
 
     # Update config with CLI arguments
+    if args.seed is not None:
+        config["seed"] = args.seed
+        
     if args.max_gap is not None:
         config["data"]["max_gap"] = args.max_gap
 
@@ -113,7 +116,7 @@ if __name__ == "__main__":
         config["model"]["action_space"] = args.action_space
         config["eval"]["action_space"] = args.action_space
     
-    if args.datadirectory is not None:
+    if args.datapath is not None:
         config["data"]["datapath"] = args.datapath
     
 
@@ -139,6 +142,6 @@ if __name__ == "__main__":
 
     wandb.config.update(config)
 
-    set_seed(args.seed)
+    set_seed(config["seed"])
 
     train_imitation_learning(config)

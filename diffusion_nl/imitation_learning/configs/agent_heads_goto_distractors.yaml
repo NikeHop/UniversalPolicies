@@ -3,7 +3,7 @@ goal_type: "language"
 seed: 42
 
 data:
-  datapath: "../../data/GOTO/mixed_83_4_0_False_demos/dataset_83.pkl"
+  datapath: "../../data/GOTO_DISTRACTOR/mixed_5000_4_3_False_demos/dataset_5000.pkl"
   max_gap: 100
   batch_size: 128
   percentage: 0.8
@@ -28,7 +28,7 @@ training:
   accelerator: "gpu"
   gpus: [0]
   strategy: "ddp_find_unused_parameters_true"
-  max_epochs: 100
+  max_epochs: 20
 
 logging:
   entity: ""
@@ -43,7 +43,7 @@ eval:
   device: "cuda:0"
   env: "goto"
   encoder_model: "google-t5/t5-small"
-  num_distractors: 0
+  num_distractors: 3
   action_space: 0
   num_envs: 512
   evaluation_episodes: 1
