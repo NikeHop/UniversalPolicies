@@ -22,7 +22,8 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.utilities.seed import isolate_rng
 
 from diffusion_nl.diffusion_model.data import get_data
-from diffusion_nl.diffusion_model.model import StateSpaceDiffusionModel, EDMModel
+from diffusion_nl.diffusion_model.model import EDMModel
+from diffusion_nl.diffusion_model.utils import get_eval_config
 from diffusion_nl.diffuser_agent.eval import eval_ivd
 from diffusion_nl.utils.utils import set_seed
 
@@ -58,6 +59,7 @@ def train(config):
         train_dataloader, test_dataloader, instruction2embed, example_contexts = (
             get_data(config)
         )
+
         # Subsample example contexts with active action spaces 
         filtered_example_contexts = {}
         for action_space in config["data"]["action_spaces"]:
@@ -78,6 +80,7 @@ def train(config):
             )
         model.load_embeddings(instruction2embed)
         model.load_examples(filtered_example_contexts)
+
         # Create Trainer
         model_directory = os.path.join(
             config["logging"]["model_directory"], config["logging"]["experiment_name"], logger.name,wandb.run.id
@@ -106,7 +109,6 @@ def train(config):
                 )
             )
 
-        print(model_directory)
         if config["training"]["distributed"]:
             trainer = pl.Trainer(
                 default_root_dir=model_directory,
@@ -133,56 +135,23 @@ def train(config):
         trainer.fit(model, train_dataloader, test_dataloader)
     
         # Evaluate model
-        print(config["evaluation"]["device"])
         with torch.no_grad():
             if config["evaluation"]["eval"]:
                 for action_space in config["data"]["action_spaces"]:
                     with open(config["evaluation"]["ivd_config_file"],"r") as f:
                         ivd_config = yaml.safe_load(f)
-
-                    eval_config = {"action_space":action_space,
-                                    "agent_type": config["evaluation"]["agent_type"],
-                                    "num_distractors": config["env"]["num_distractors"],
-                                    "use_agent_type": config["env"]["use_agent_type"],
-                                    "env": "goto",
-                                    "evaluation_episodes": config["evaluation"]["evaluation_episodes"],
-                                    "num_envs": config["evaluation"]["num_envs"],
-                                    "max_timesteps": config["evaluation"]["max_timesteps"],
-                                    "model_store": config["logging"]["model_directory"],
-                                    "dm_model_path": os.path.join(config["logging"]["experiment_name"],config["logging"]["project"]),
-                                    "dm_model_name": wandb.run.id,
-                                    "planning_type": "ivd",
-                                    "device": config["evaluation"]["device"],
-                                    "visualize": False,
-                                    "embeddings": {
-                                        "model": config["data"]["embeddings"]["model"],
-                                    },
-                                    "n_example_frames": config["data"]["n_context_frames"],
-                                    "model": model,
-                                    "ivd_model_path":ivd_config[action_space]["ivd_model_path"],
-                                    "ivd_model_name":ivd_config[action_space]["ivd_model_name"],
-                                    "ivd_model_checkpoint":ivd_config[action_space]["ivd_model_checkpoint"],
-                                    "cond_w": config["evaluation"]["cond_w"],
-                                    "example_path": config["data"]["example_path"]
-                                    }
-
+                    eval_config = get_eval_config(config, action_space, model, ivd_config)
+                    
                     eval_ivd(eval_config)
 
-        
-
 def get_model_class(model_type):
-
-    if model_type == "ddpm":
-        return StateSpaceDiffusionModel
-    elif model_type =="edm":
+    if model_type =="edm":
         return EDMModel 
     else:
         raise NotImplementedError("Model type not implemented")
     
     
 def get_env(config):
-
-
     if "GoToObjMaze" in config["env_name"]:
         env = gym.make(config["env_name"],num_dists=config["num_distractors"])
         env = FullyObsWrapper(env)
@@ -197,10 +166,6 @@ def get_env(config):
         else:
             env = gym.make(config["env_name"])
             env = FullyObsWrapper(env)
-
-    elif "BossLevel" in config["env_name"]:
-        env = gym.make(config["env_name"])
-        env = FullyObsWrapper(env)
 
     else:
         raise NotImplementedError("Environment not implemented")

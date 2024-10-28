@@ -36,7 +36,7 @@ logging:
   mode: disabled
   model_directory: "../../model_store"
   experiment_name: ""
-  tags: [""]
+  tags: ["test"]
 
 eval:
   eval: True

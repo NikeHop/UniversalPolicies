@@ -5,7 +5,7 @@
 ## Prerequisites & Dependencies
 
 
-All of the logging is done via [WandB](https://wandb.ai/site/), but needs to be enabled in the config files.
+All of the logging is done via [WandB](https://wandb.ai/site/).
 
 ## Run Experiments 
 
@@ -47,6 +47,7 @@ To generate the dataset for all action spaces and pool all datasets from the in-
 
 `bash ./scripts/data_generation.sh`
 
+The data for the GOTO environment is already part of the repository (see `./data`).
 
 ### Train Inverse Dynamics Models 
 
@@ -61,18 +62,33 @@ To train an ivd for all available action spaces in an instance of the BabyAI env
 
 ### Train the Diffusion Planner 
 
+The code to train the diffusion planner can be found in `./diffusion_nl/diffusion_model`. All the following commands should be run from there. To train a diffusion planner for 
+
+
 ### Evaluate via the Diffusion Agent
 
 ### Train Imitation Learning Policy
 
-The code for the inverse dynamics models can be found in `./diffusion_nl/imitation_learning`. All the following commands should be run from there. To train the imitation learning baselines on a specific dataset for a specific action space run 
+The code to train the imitation learning policies can be found in `./diffusion_nl/imitation_learning`. All the following commands should be run from there. To train the imitation learning baselines on a specific dataset for a specific action space run 
 
-`python train.py --config ./configs/instruction_imitation_goto.yaml --datapath ./data/GOTO/`
+`python train.py --config ./configs/instruction_imitation_goto.yaml --datapath "../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl" --action_space 0`
 
+After training the model is evaluated over 512 episodes in the corresponding environment. To train the IL baseline for all action spaces run:
 
-After training the model is evaluated over 512 evaluation episodes onb the action space set in the config file. 
+`bash ./scripts/train_il_all_action_spaces.sh`
+
+To run the imitation learning baselines that can handle multiple action spaces use the following config files:
+- `agent_heads_goto.yaml` ("IL - Agent Head")
+- `complete_action_space_goto.yaml` ("IL - Union of Action Spaces").
+
 
 ### Evaluate Imitation Learning Policy
+
+To evaluate policies in the GOTO environment that work for multiple agents (IL - Agent Head, IL - Union of Action Spaces) on all action space (0-7) run:
+
+`bash eval_all_action_spaces.sh PATH_TO_CHECKPOINT`.
+
+Changes to the evaluation can be made in the corresponding config files (`eval_instruction_imitation_goto.yaml`,`eval_instruction_imitation_goto_distractors.yaml`).
 
 ## Trained Models 
 
@@ -81,7 +97,7 @@ We make the trained inverse dynamics models, imitation learning baselines and di
 
 ## Acknowledgements 
 
-The code was written using code elements from the following repositories:
+The code used code elements from the following repositories:
 
 - [https://github.com/labmlai/annotated_deep_learning_paper_implementations](https://github.com/labmlai/annotated_deep_learning_paper_implementations) (MIT License)
 - [https://github.com/NVlabs/edm](https://github.com/NVlabs/edm) (CC BY-NC-SA 4.0)

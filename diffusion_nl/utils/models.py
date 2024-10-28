@@ -56,6 +56,11 @@ class EDM(pl.LightningModule):
         loss = self.get_loss(video, context, labels)
         self.log("training/loss", loss)
         return loss
+    
+    def validation_step(self, video, context, labels):
+        loss = self.get_loss(video, context, labels)
+        self.log("validation/loss", loss)
+        return loss
 
     def get_loss(self, video, context, labels):
         obs_0, video = video[:, 0], video[:, 1:]
@@ -86,10 +91,6 @@ class EDM(pl.LightningModule):
 
         return D_x
 
-    def validation_step(self, video, context, labels):
-        loss = self.get_loss(video, context, labels)
-        self.log("validation/loss", loss)
-        return loss
 
     def conditional_sample(self, obs_0, context, labels, shape):
 

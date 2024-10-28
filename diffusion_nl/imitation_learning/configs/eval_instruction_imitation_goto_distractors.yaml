@@ -1,0 +1,20 @@
+---
+seed: 42
+checkpoint: ""
+device: "cuda:0"
+
+logging:
+  entity: ""
+  project: ""
+  mode: disabled
+  model_directory: "../../model_store"
+  experiment_name: ""
+  tags: [""]
+
+env: "goto"
+encoder_model: "google-t5/t5-small"
+num_distractors: 3
+action_space: 1
+num_envs: 512
+evaluation_episodes: 1
+max_timesteps: 15

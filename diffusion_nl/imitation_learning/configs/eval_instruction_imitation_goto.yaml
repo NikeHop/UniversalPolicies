@@ -4,16 +4,16 @@ checkpoint: ""
 device: "cuda:0"
 
 logging:
-  entity: Niklas_hop
-  project: DiffusionMultiAgent
+  entity: ""
+  project: ""
   mode: online
   model_directory: "../../model_store"
-  experiment_name: "imitation_learning_goal_obs"
-  tags: ["BabyAI","ImitationLearning","GoalObs"]
+  experiment_name: ""
+  tags: [""]
 
 env: "goto"
 encoder_model: "google-t5/t5-small"
-num_distractors: 3
+num_distractors: 0
 action_space: 1
 num_envs: 512
 evaluation_episodes: 1

@@ -1,16 +1,13 @@
 import random
-import os
 import pickle
 
 import blosc
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import tqdm
 
-from transformers import AutoTokenizer, T5EncoderModel
 from torch.utils.data import DataLoader, Dataset, random_split
 
+from diffusion_nl.utils.utils import get_embeddings
 
 class ImitationGoalObsDataset(Dataset):
     def __init__(self, data, max_gap=1):
@@ -165,69 +162,6 @@ def get_data_goal_obs_policy(config):
 
     return train_dataloader, test_dataloader
 
-
-def get_embeddings(data, config):
-    instructions = list(set([sample[0] for sample in data]))
-
-    if config["embeddings"]["type"] == "random":
-        inst2embed = get_random_embeddings(instructions, config)
-
-    elif config["embeddings"]["type"] == "t5":
-        inst2embed = get_t5_embeddings(instructions, config)
-
-    else:
-        raise NotImplementedError("Embedding type is not implemented")
-
-    return inst2embed
-
-
-def get_random_embeddings(instructions, config):
-    inst2embed = {}
-    embeddings = nn.Embedding(len(instructions), config["embeddings"]["size"])
-    embeddings.requires_grad = False
-    for i, inst in enumerate(sorted(instructions)):
-        inst2embed[inst] = embeddings(torch.tensor(i))
-
-    return inst2embed
-
-
-def get_t5_embeddings(instructions, config):
-    inst2embed = {}
-    tokenizer = AutoTokenizer.from_pretrained(config["embeddings"]["model"])
-    encoder_model = T5EncoderModel.from_pretrained(config["embeddings"]["model"]).to(
-        config["embeddings"]["device"]
-    )
-    inputs = tokenizer(
-        instructions, return_tensors="pt", padding=True, truncation=True
-    ).to(config["embeddings"]["device"])
-
-    encoded_embeddings = []
-    n_instructions = len(instructions)
-    n_encoded_instructions = 0
-    B = config["embeddings"]["batch_size"]
-    pbar = tqdm.tqdm(total=n_instructions)
-    with torch.no_grad():
-        while n_encoded_instructions < n_instructions:
-            model_output = encoder_model(
-                input_ids=inputs["input_ids"][
-                    n_encoded_instructions : n_encoded_instructions + B
-                ],
-                attention_mask=inputs["attention_mask"][
-                    n_encoded_instructions : n_encoded_instructions + B
-                ],
-            )
-            encoded_embeddings.append(
-                model_output.last_hidden_state.mean(dim=1).detach().cpu()
-            )
-            n_encoded_instructions += B
-            pbar.update(B)
-
-    embeddings = torch.cat(encoded_embeddings, dim=0)
-
-    for elem, instruction in zip(embeddings, instructions):
-        inst2embed[instruction] = elem
-
-    return inst2embed
 
 
 def get_data(config):
