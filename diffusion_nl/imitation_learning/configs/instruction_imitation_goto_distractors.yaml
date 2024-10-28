@@ -3,8 +3,7 @@ goal_type: "language"
 seed: 42
 
 data:
-  directory: "../../data/GOTO/standard_30000_4_3_False_demos"
-  filename: "dataset_30000.pkl"
+  datapath: "../../data/GOTO_DISTRACTOR/standard_5000_4_3_False_demos/dataset_5000.pkl"
   max_gap: 100
   batch_size: 128
   percentage: 0.8
@@ -15,11 +14,12 @@ embeddings:
   model: "google-t5/t5-small"
   batch_size: 4096
 
-
 model:
   lr: 0.0001
   large_env: False
   action_space: 0
+  use_agent_id: False
+  use_unique_agent_heads: False
   load:
     load: False
     checkpoint: ""
@@ -27,13 +27,13 @@ model:
 training:
   distributed: True
   accelerator: "gpu"
-  gpus: [3]
+  gpus: [0]
   strategy: "ddp_find_unused_parameters_true"
-  max_epochs: 20
+  max_epochs: 100
 
 logging:
   entity: ""
-  project: DiffusionMultiAgent
+  project: ""
   mode: disabled
   model_directory: "../../model_store"
   experiment_name: ""

@@ -14,7 +14,6 @@ embeddings:
   model: "google-t5/t5-small"
   batch_size: 4096
 
-
 model:
   lr: 0.0001
   action_space: 8
@@ -32,12 +31,12 @@ training:
   max_epochs: 500
 
 logging:
-  entity: Niklas_hop
-  project: DiffusionMultiAgent
-  mode: online
+  entity: ""
+  project: ""
+  mode: disabled
   model_directory: "../../model_store"
-  experiment_name: "imitation_learning_goal_obs"
-  tags: ["BabyAI","ImitationLearning","GoalObs"]
+  experiment_name: ""
+  tags: [""]
 
 eval:
   eval: True
