@@ -1,106 +1,133 @@
+"""
+Code to generate the example trajectories for conditioning the planner
+"""
+import argparse 
+import os 
+import pickle
+import random
+
+from collections import defaultdict
+
+import blosc 
+import gymnasium as gym
+import minigrid
+import numpy as np 
+import yaml 
+
+from minigrid.core.actions import ActionSpace, ActionSpace, Actions
+from minigrid.wrappers import FullyObsWrapper
+
+from diffusion_nl.diffusion_model.utils import extract_agent_pos_and_direction
+from diffusion_nl.environments.babyai.goto_specific import register_envs, FIXINSTGOTO_ENVS
+from diffusion_nl.utils.utils import set_seed
+
 GO_TO_IRRELEVANT_ACTIONS = [Actions(3), Actions(4), Actions(5), Actions(6)]
-BOSSLEVEL_IRRELEVANT_ACTIONS = [Actions(6)]
-
-def check_subsequence(subsequence, action_space):
-    if len(subsequence) < 3:
-        return False
-    print([int(elem) for elem in subsequence])
-    if action_space == 0:
-        # It should contain either a turn left or turn right
-        subsequence = [int(elem) for elem in subsequence]
-        action_types = set(subsequence)
-        if 1 in action_types or 0 in action_types:
-            return True
-
-    elif action_space == 1:
-        # It should contain three right turns
-        subsequence = [int(elem) for elem in subsequence]
-        action_types = set(subsequence)
-        if 1 in action_types and len(action_types) == 1:
-            return True
-
-    elif action_space == 2:
-        # It should contain three left turns
-        subsequence = [int(elem) for elem in subsequence]
-        action_types = set(subsequence)
-        if 0 in action_types and len(action_types) == 1:
-            return True
-
-    elif action_space == 3:
-        # It should contain a diagonal
-        subsequence = [int(elem) for elem in subsequence]
-        action_types = set(subsequence)
-        print(action_types)
-        if 7 in action_types or 8 in action_types:
-            return True
-
-    return False
-
-
-def check_condition(examples, n_examples):
-    print("Check conditions")
-    if len(examples) < 4:
-        return False
-
-    for i, value in examples.items():
-        print(i, len(value))
-        if len(value) < n_examples:
-            return False
-    return True
 
 
 def generate_example_trajectories(config):
-    if config["trajectory_type"]=="full_action_space_single_random":
-        generate_full_action_space_random(
+    if config["example_type"]=="action_space_random":
+        generate_action_space_random(
             config["env"],
             config["seed"],
-            config["use_img_obs"],
             config["num_distractors"],
-            config["img_size"],
-            config["n_action_spaces"],
+            config["n_examples"],
             config["save_directory"],
-            config["n_examples"]
         )
-    elif config["trajectory_type"] == "every_action":
-        generate_examples(config)
+    elif config["example_type"] == "slot_per_action":
+        generate_slot_per_action(config["save_directory"])
     else:
         raise NotImplementedError(f"This trajectory type has not been implemented {config['trajectory_type']}")
-
-def generate_full_action_space_random(
-    env_name: str,
-    seed: int,
-    use_img_obs: bool,
-    num_distractors: int,
-    img_size: int,
-    n_action_spaces: int,
-    save_directory: str,
-    n_examples: int
-):
+    
+def generate_slot_per_action(save_directory):
     """
-    Generate a single episode of demonstrations from the BabyAIBot
+    Generate example trajectories by executing each action in the action space
 
     Args:
-        env_name (str): the name of the environment (without prefixes and suffixes)
-        action_space (ActionSpace): action space
-        minimum_length (int): minimum length of the episode (otherwise it is discarded)
-        seed (int): seed
-        use_img_obs (bool): if true uses image observation otherwise uses fully obs state space
-        debug (bool): debug flag
-        img_size (int): size of the image, only relevant if use_img_obs is true
+        save_directory: Directory to save the examples to.
     """
-    # Seed everything
-    set_seed(seed)
 
+    # Prepare data structure
+    examples = defaultdict(list)
+  
+    # Generate a start state
+    env_id = FIXINSTGOTO_ENVS[0]
+    env = gym.make(
+        env_id,
+        highlight=False,
+        action_space=ActionSpace.all,
+        num_dists=0,
+        action_space_agent_color=False,
+    )
+    env = FullyObsWrapper(env)
+    _ = env.reset()[0]
+    grid = env.grid
+    cleaned_grid = []
+    for elem in grid.grid:
+        if isinstance(elem,minigrid.core.world_object.Wall):
+            cleaned_grid.append(elem)
+        elif elem is None:
+            cleaned_grid.append(elem)
+        else:
+            cleaned_grid.append(None)
+
+    grid.grid = cleaned_grid
+    env.set_state(grid,(3,3),0,0)
+    
+    # All actions to test
+    actions = list(range(4)) + list(range(7,19))
+    for action_space in ActionSpace:
+        legal_actions = action_space.get_legal_actions()
+        grid.grid = cleaned_grid
+        env.set_state(grid,(3,3),3,0)
+        obs = env.step(6)
+        state = obs[0]["image"]
+        examples[action_space].append(state)
+
+        if action_space == ActionSpace.all:
+            continue
+        
+        for action in actions:
+            grid.grid = cleaned_grid
+            env.set_state(grid,(3,3),3,0)
+            if action not in legal_actions:
+                action = 6
+            obs = env.step(action)
+            state = obs[0]["image"]
+            examples[action_space].append(state)
+    
+    # Format the contexts
+    for action_space, example in examples.items():
+        examples[action_space] = [blosc.pack_array(np.stack(example,axis=0))]
+
+    # Save examples
+    filename = f"slot_per_action.pkl"
+    with open(os.path.join(save_directory, filename), "wb") as file:
+        pickle.dump(examples, file)
+
+def generate_action_space_random(
+    env_name: str,
+    seed: int,
+    num_distractors: int,
+    n_examples: int,
+    save_directory: str,
+):
+    """
+    Generate a example demonstrations to condition on.
+
+    Args:
+        
+    """
+    
     # Set up datastructure 
     example_contexts = defaultdict(list)
 
     # Iterate over the action spaces
     for _ in range(n_examples):
-        for action_space in range(n_action_spaces):
+        for action_space in range(8):
             action_space = ActionSpace(action_space)
             legal_actions = action_space.get_legal_actions()
 
-            if "GOTO"==env_name:
+            if env_name=="goto":
                 # Sample an environment 
                 env_id = random.choice(FIXINSTGOTO_ENVS)
                 env = gym.make(
@@ -110,24 +137,12 @@ def generate_full_action_space_random(
                     num_dists=num_distractors,
                 )
                 irrelevant_actions = GO_TO_IRRELEVANT_ACTIONS
-            elif "BossLevel" in env_name:
-                env = gym.make(
-                    env_name,
-                    highlight=False,
-                    action_space=action_space,
-                )
-                irrelevant_actions = BOSSLEVEL_IRRELEVANT_ACTIONS
+                env = FullyObsWrapper(env)
             else:
                 raise NotImplementedError(
                     f"This environment has not been implemented {env_name}"
                 )
-
-            # Apply Wrapper (image or state as obs)
-            if use_img_obs:
-                env = RGBImgObsWrapper(env, tile_size=img_size // env.unwrapped.width)
-            else:
-                env = FullyObsWrapper(env)
-
+          
             success = False 
             while not success:
                 obs = env.reset()[0]
@@ -161,7 +176,7 @@ def generate_full_action_space_random(
                     seed += 1
 
     # Save example contexts
-    filename = f"{env_name}_{n_examples}_{num_distractors}_full_action_space_random.pkl"
+    filename = f"{env_name}_{n_examples}_{num_distractors}_action_space_random.pkl"
     with open(os.path.join(save_directory,filename),"wb") as file:
         pickle.dump(example_contexts,file)
     
@@ -170,67 +185,51 @@ def generate_full_action_space_random(
         longest_episode = max([blosc.unpack_array(example).shape[0] for example in examples])
         print(f"Action space {action_space} longest episode {longest_episode}")
 
-def generate_examples(config):
-    # Prepare data structure
-    example_contexts = defaultdict(list)
-    save_directory = config["save_directory"]
 
-    # Generate a start state
-    env_id = FIXINSTGOTO_ENVS[0]
-    env = gym.make(
-        env_id,
-        highlight=False,
-        action_space=ActionSpace.all,
-        num_dists=0,
-        action_space_agent_color=True,
-    )
-
-    env = FullyObsWrapper(env)
-    _ = env.reset()[0]
-    grid = env.grid
-    cleaned_grid = []
-    for elem in grid.grid:
-        if isinstance(elem,minigrid.core.world_object.Wall):
-            cleaned_grid.append(elem)
-        elif elem is None:
-            cleaned_grid.append(elem)
-        else:
-            cleaned_grid.append(None)
-
-    grid.grid = cleaned_grid
-    env.set_state(grid,(3,3),0,0)
+def check_subsequence(subsequence, action_space):
+    if len(subsequence) < 3:
+        return False
     
-    # All actions to test
-    actions = list(range(4)) + list(range(7,19))
-    for action_space in ActionSpace:
-        legal_actions = action_space.get_legal_actions()
-        grid.grid = cleaned_grid
-        env.set_state(grid,(3,3),3,0)
-        obs = env.step(6)
-        state = obs[0]["image"]
-        example_contexts[action_space].append(state)
+    if action_space == 0:
+        # It should contain either a turn left or turn right
+        subsequence = [int(elem) for elem in subsequence]
+        action_types = set(subsequence)
+        if 1 in action_types or 0 in action_types:
+            return True
 
-        if action_space == ActionSpace.all:
-            continue
-        
-        for action in actions:
-            grid.grid = cleaned_grid
-            env.set_state(grid,(3,3),3,0)
-            if action not in legal_actions:
-                action = 6
-            obs = env.step(action)
-            state = obs[0]["image"]
-            example_contexts[action_space].append(state)
-    
-    # Format the contexts
-    for action_space, examples in example_contexts.items():
-        example_contexts[action_space] = [blosc.pack_array(np.stack(examples,axis=0))]
+    elif action_space == 1:
+        # It should contain three right turns
+        subsequence = [int(elem) for elem in subsequence]
+        action_types = set(subsequence)
+        if 1 in action_types and len(action_types) == 1:
+            return True
 
-    # Save examples
-    filename = f"no_padding_each_action_0.pkl"
-    with open(os.path.join(save_directory, filename), "wb") as file:
-        pickle.dump(example_contexts, file)
+    elif action_space == 2:
+        # It should contain three left turns
+        subsequence = [int(elem) for elem in subsequence]
+        action_types = set(subsequence)
+        if 0 in action_types and len(action_types) == 1:
+            return True
 
+    elif action_space == 3:
+        # It should contain a diagonal
+        subsequence = [int(elem) for elem in subsequence]
+        action_types = set(subsequence)
+        if 7 in action_types or 8 in action_types:
+            return True
+
+    return False
+
+def check_condition(examples, n_examples):
+    print("Check conditions")
+    if len(examples) < 4:
+        return False
+
+    for i, value in examples.items():
+        print(i, len(value))
+        if len(value) < n_examples:
+            return False
+    return True
 
 def get_possible_actions(obs):
     """
@@ -387,3 +386,19 @@ def get_possible_actions(obs):
                     possible_actions.append(action)
 
     return possible_actions
+
+
+
+if __name__=="__main__":
+    parser = argparse.ArgumentParser(description="Generate example trajectories for the planner")
+    parser.add_argument("--config",type=str,required=True)
+
+    args = parser.parse_args()
+
+    with open(args.config,"r") as file:
+        config = yaml.safe_load(file)
+    
+    set_seed(config["seed"])
+    register_envs()
+    generate_example_trajectories(config)
+

@@ -18,7 +18,7 @@ from einops import rearrange
 
 from diffusion_nl.imitation_learning.model import ImitationPolicy
 from diffusion_nl.ivd_model.model import IVDBabyAI
-from diffusion_nl.diffusion_model.model import StateSpaceDiffusionModel, EDMModel
+from diffusion_nl.diffusion_model.model import EDMModel
 from diffusion_nl.diffusion_model.utils import transform_sample
 from transformers import AutoTokenizer, T5EncoderModel
 

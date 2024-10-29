@@ -4,7 +4,6 @@ Evaluation script for the diffuser agent
 
 import argparse
 import os
-import pickle
 import random
 
 from collections import defaultdict
@@ -31,7 +30,7 @@ from diffusion_nl.diffuser_agent.agent import (
 
 from diffusion_nl.utils.utils import set_seed
 from diffusion_nl.diffusion_model.utils import state2img
-from diffusion_nl.utils.environments import FIXINSTGOTO_ENVS
+from diffusion_nl.environments.babyai.goto_specific import FIXINSTGOTO_ENVS
 
 
 def get_agent(config,model):

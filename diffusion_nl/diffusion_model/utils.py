@@ -1,13 +1,13 @@
 import os
 
 import numpy as np
+import pytorch_lightning as pl
 import torch
 import wandb
 
 from minigrid.core.grid import Grid
 from minigrid.core.constants import COLORS, IDX_TO_COLOR
 
-from diffusion_nl.diffusion_model.model import EDMModel
 
 def extract_agent_pos_and_direction(obs: np.array) -> tuple[int, int]:
     """
@@ -81,7 +81,7 @@ def transform_sample(sample: torch.Tensor):
     return images
 
 
-def get_eval_config(config: dict, action_space: int, model:EDMModel, ivd_config: dict) -> dict:
+def get_eval_config(config: dict, action_space: int, model:pl.LightningModule, ivd_config: dict) -> dict:
     eval_config = {
         "action_space": action_space,
         "agent_type": config["evaluation"]["agent_type"],

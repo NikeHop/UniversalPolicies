@@ -49,6 +49,12 @@ To generate the dataset for all action spaces and pool all datasets from the in-
 
 The data for the GOTO environment is already part of the repository (see `./data`).
 
+To create example trajectories of each agent type that the diffusion planner can be conditioned on run: 
+
+`python generate_examples.py --config ./configs/generate_examples.yaml`.
+
+The type of examples to be generated can be specified in the config file. 
+
 ### Train Inverse Dynamics Models 
 
 The code for the inverse dynamics models can be found in `./diffusion_nl/ivd_model`. All the following commands should be run from there. To train an inverse dynamics model for a given action space on a specific dataset run:
@@ -62,12 +68,17 @@ To train an ivd for all available action spaces in an instance of the BabyAI env
 
 ### Train the Diffusion Planner 
 
-The code to train the diffusion planner can be found in `./diffusion_nl/diffusion_model`. All the following commands should be run from there. To train a diffusion planner for 
+The code to train the diffusion planner can be found in `./diffusion_nl/diffusion_model`. All the following commands should be run from there. To train a diffusion planner for action space 0 in the GOTO environment run: 
 
+`python train.py --config ./configs/goto.yaml --datapath ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl --action_space 0`
+
+To train a diffusion planner for each action space separately in the GOTO environment run:
+
+`bash train_all_action_spaces.sh`.
 
 ### Evaluate via the Diffusion Agent
 
-### Train Imitation Learning Policy
+### Train Imitation Learning Policies
 
 The code to train the imitation learning policies can be found in `./diffusion_nl/imitation_learning`. All the following commands should be run from there. To train the imitation learning baselines on a specific dataset for a specific action space run 
 
@@ -82,7 +93,7 @@ To run the imitation learning baselines that can handle multiple action spaces u
 - `complete_action_space_goto.yaml` ("IL - Union of Action Spaces").
 
 
-### Evaluate Imitation Learning Policy
+### Evaluate Imitation Learning Policies
 
 To evaluate policies in the GOTO environment that work for multiple agents (IL - Agent Head, IL - Union of Action Spaces) on all action space (0-7) run:
 

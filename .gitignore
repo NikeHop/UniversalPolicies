@@ -1,5 +1,6 @@
 data/*
 !data/GOTO
+!data/EXAMPLES
 figures
 model_store
 wandb

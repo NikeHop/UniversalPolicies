@@ -1,0 +1,7 @@
+---
+seed: 42
+env: "goto"
+example_type: "action_space_random"
+num_distractors: 0
+save_directory: "../../../data/GOTO"
+n_examples: 1

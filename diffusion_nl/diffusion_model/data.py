@@ -171,7 +171,7 @@ def get_data(config):
 
 def get_data_baby_ai(config):
     # Create Dataset
-    with open(config["data"]["data_path"], "rb") as file:
+    with open(config["data"]["datapath"], "rb") as file:
         data = pickle.load(file)
 
     # Create embeddings

@@ -141,7 +141,7 @@ def train(config):
                     with open(config["evaluation"]["ivd_config_file"],"r") as f:
                         ivd_config = yaml.safe_load(f)
                     eval_config = get_eval_config(config, action_space, model, ivd_config)
-                    
+
                     eval_ivd(eval_config)
 
 def get_model_class(model_type):
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--experiment_name", type=str, default=None, help="Name of the experiment"
     )
-    parser.add_argument("--data_path", type=str, default=None, help="Path to dataset")
+    parser.add_argument("--datapath", type=str, default=None, help="Path to dataset")
 
     parser.add_argument(
         "--w", type=float, default=None, help="Guiding strength for the diffusion model"
@@ -244,8 +244,8 @@ if __name__ == "__main__":
     if args.experiment_name != None:
         config["logging"]["experiment_name"] = args.experiment_name
 
-    if args.data_path != None:
-        config["data"]["data_path"] = args.data_path
+    if args.datapath != None:
+        config["data"]["datapath"] = args.datapath
 
     if config["training"]["distributed"] and args.device != None:
         config["training"]["gpus"] = [args.device]
