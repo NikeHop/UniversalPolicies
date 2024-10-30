@@ -14,7 +14,7 @@ use_agent_type: False
 use_img_obs: False
 part: -1
 logging:
-  mode: disabled
-  project: ""
-  experiment_name: ""
-
+  mode: online
+  project: "DiffusionMultiAgent"
+  experiment_name: "data_generation_babyai"
+  tags: ["BabyAI","DataGeneration","GoTo"]

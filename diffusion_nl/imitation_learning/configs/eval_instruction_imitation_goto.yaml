@@ -5,11 +5,11 @@ device: "cuda:0"
 
 logging:
   entity: ""
-  project: ""
+  project: "DiffusionMultiAgent"
   mode: online
   model_directory: "../../model_store"
-  experiment_name: ""
-  tags: [""]
+  experiment_name: "evaluation_imitation_learning"
+  tags: ["BabyAI","ImitationLearning","GoTo","Evaluation"]
 
 env: "goto"
 encoder_model: "google-t5/t5-small"

@@ -27,4 +27,4 @@ logging:
   model_directory: "../../model_store"
   project: "DiffusionMultiAgent"
   entity: ""
-  tags: [""]
+  tags: ["BabyAI","IVD"]

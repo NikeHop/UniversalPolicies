@@ -10,10 +10,11 @@ num_distractors: 3
 num_workers: 32
 n_episodes: 5000
 seed: 42
-use_agent_type: True
+use_agent_type: False
 use_img_obs: False
 part: -1
 logging:
-  mode: disabled
-  project: ""
-  experiment_name: ""
+  mode: online
+  project: "DiffusionMultiAgent"
+  experiment_name: "data_generation_babyai"
+  tags: ["BabyAI","DataGeneration","GoToDistractor"]

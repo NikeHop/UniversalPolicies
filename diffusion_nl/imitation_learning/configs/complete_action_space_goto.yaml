@@ -32,11 +32,11 @@ training:
 
 logging:
   entity: ""
-  project: ""
-  mode: disabled
+  project: "DiffusionMultiAgent"
+  mode: online
   model_directory: "../../model_store"
-  experiment_name: ""
-  tags: [""]
+  experiment_name: "imitation_learning"
+  tags: ["BabyAI","ImitationLearning","GoTo","CompleteActionSpace"]
 
 eval:
   eval: True
