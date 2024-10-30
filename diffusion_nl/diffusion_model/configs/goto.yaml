@@ -46,7 +46,7 @@ model:
   lr: 0.00002
   mean: 5
   std: 5
-  use_instruction: True
+  use_instruction: False
   use_context: False
   cond_w: 0
   image_size: 8
@@ -89,7 +89,7 @@ evaluation:
 training:
   early_stopping: False
   distributed: True
-  max_steps: 10
+  max_steps: 500001
   accelerator: "gpu"
   strategy: "ddp_find_unused_parameters_true"
   check_val_every_n_epoch: 

@@ -53,7 +53,8 @@ To create example trajectories of each agent type that the diffusion planner can
 
 `python generate_examples.py --config ./configs/generate_examples.yaml`.
 
-The type of examples to be generated can be specified in the config file. 
+The type of examples to be generated can be specified in the config file. Running the command will create a .pkl file in `./data/EXAMPLES` that contains a dictionary mapping the action-space ID to a list of examples the planner can be conditioned on. 
+The file follows the following naming convention `{env}_{n_examples}_{n_distractors}_{example_type}.pkl`.
 
 ### Train Inverse Dynamics Models 
 
@@ -72,11 +73,20 @@ The code to train the diffusion planner can be found in `./diffusion_nl/diffusio
 
 `python train.py --config ./configs/goto.yaml --datapath ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl --action_space 0`.
 
-After training the planner will be evaluated over 512 episodes in the corresponding environments. For that the IVD-models for the action space must exist and the path to the IVD must be specified in `ivd_goto.yaml`. 
+After training the planner will be evaluated over 512 episodes in the corresponding environment. For that the IVD-models for the action space must exist and the path to the IVD must be specified in `ivd_goto.yaml`. To obtain pretrained IVDs see [here](#trained-models) or to train them from scratch see [here](#train-inverse-dynamics-models)
 
 To train a diffusion planner for each action space separately in the GOTO environment run:
 
 `bash train_all_action_spaces.sh`.
+
+By changing the config file we can train the following variations of the diffusion planner:
+
+- mixed_goto.yaml; train on mixed dataset.
+- mixed_agentid.yaml; train on mixed dataset and condition on agentid.
+- mixed_action_space.yaml; train on mixed dataset and condition on action space encoding.
+- mixed_example.yaml; train on mixed dataset and condition on examples.
+- goto_distractor.yaml; train on standard dataset in GoTo-Distractors environment and condition on agentid.
+- goto_distractor_large.yaml; train on standard dataset in GoTo-Distractors-Large environment and condition on agentid.
 
 ### Evaluate via the Diffusion Agent
 
@@ -107,7 +117,9 @@ Changes to the evaluation can be made in the corresponding config files (`eval_i
 
 We make the trained inverse dynamics models, imitation learning baselines and diffusion planners for a single random seed in the GOTO environment available [here](https://drive.google.com/file/d/1aX9sYjRN3iFYyGr9mHpo41plymyy1qnt/view?usp=drive_link).
 
-To use the trained IVD models of the G
+To use the trained IVD models of the GOTO environment, put the downloaded zip into the `./model_store` folder and unzip it:
+
+`unzip -r UniversalPoliciesModels.zip UniversalPoliciesModels`
 
 ## Acknowledgements 
 

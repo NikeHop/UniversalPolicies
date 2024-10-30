@@ -38,14 +38,14 @@ def generate_example_trajectories(config):
             config["save_directory"],
         )
     elif config["example_type"] == "slot_per_action":
-        generate_slot_per_action(config["save_directory"])
+        generate_slot_per_action(config["env"], config["save_directory"])
     else:
         raise NotImplementedError(
             f"This trajectory type has not been implemented {config['trajectory_type']}"
         )
 
 
-def generate_slot_per_action(save_directory):
+def generate_slot_per_action(env: str, save_directory: str):
     """
     Generate example trajectories by executing each action in the action space
 
@@ -57,14 +57,27 @@ def generate_slot_per_action(save_directory):
     examples = defaultdict(list)
 
     # Generate a start state
-    env_id = FIXINSTGOTO_ENVS[0]
-    env = gym.make(
-        env_id,
-        highlight=False,
-        action_space=ActionSpace.all,
-        num_dists=0,
-        action_space_agent_color=False,
-    )
+    if env == "goto":
+        env_id = FIXINSTGOTO_ENVS[0]
+        env = gym.make(
+            env_id,
+            highlight=False,
+            action_space=ActionSpace.all,
+            num_dists=0,
+            action_space_agent_color=False,
+        )
+    elif env == "goto_large":
+        env_id = "BabyAI-GoToObjMazeS7-v0"
+        env = gym.make(
+            env_id,
+            highlight=False,
+            action_space=ActionSpace.all,
+            num_dists=7,
+            action_space_agent_color=False,
+        )
+    else:
+        raise NotImplementedError(f"This environment has not been implemented")
+
     env = FullyObsWrapper(env)
     _ = env.reset()[0]
     grid = env.grid
@@ -150,11 +163,22 @@ def generate_action_space_random(
                     num_dists=num_distractors,
                 )
                 irrelevant_actions = GO_TO_IRRELEVANT_ACTIONS
-                env = FullyObsWrapper(env)
+
+            elif env_name == "goto_large":
+                env_id = "BabyAI-GoToObjMazeS7-v0"
+                env = gym.make(
+                    env_id,
+                    highlight=False,
+                    action_space=action_space,
+                    num_dists=num_distractors,
+                )
+                irrelevant_actions = GO_TO_IRRELEVANT_ACTIONS
+
             else:
                 raise NotImplementedError(
                     f"This environment has not been implemented {env_name}"
                 )
+            env = FullyObsWrapper(env)
 
             success = False
             while not success:

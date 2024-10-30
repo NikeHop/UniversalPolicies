@@ -1,7 +1,7 @@
 ---
 seed: 42
-env: "goto"
+env: "goto_large"
 example_type: "action_space_random"
-num_distractors: 0
+num_distractors: 7
 save_directory: "../../../data/EXAMPLES"
 n_examples: 1

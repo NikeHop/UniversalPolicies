@@ -1,10 +1,10 @@
 ---
 data:
   dataset: "BabyAI"
-  data_path: ../../data/GOTO/standard_5000_4_3_False_demos/dataset_5000.pkl
+  datapath: ../../data/GOTO_DISTRACTOR_LARGE/standard_25000_4_7_False_demos/dataset_25000.pkl
   action_spaces: [0]
   train_split: 0.75
-  batch_size: 128
+  batch_size: 512
   n_frames: 4
   n_context_frames: 10
   step_frequency: 1
@@ -16,19 +16,20 @@ data:
     batch_size: 4096
   mean: 5
   std: 5
-  example_path: ../../data/GOTO/GOTO_100_full_action_space_random.pkl
+  example_path: "../../data/EXAMPLES/goto_large_1_7_action_space_random.pkl"
 
 logging:
-  experiment_name: "test_edm"
+  experiment_name: "diffusion_planner"
   model_directory: "../../model_store"
-  project: DiffusionMultiAgent # Wandb project name 
-  entity: diffusion-boyz
-  tags: ["BabyAI","DiffusionPlanner","SampleEfficiency"]
+  project: DiffusionMultiAgent 
+  entity: ""
+  tags: ["BabyAI","DiffusionPlanner","GoToDistractorLarge"]
+  mode: online
 
 env:
-  env_name: "BabyAI-GoToObj-v0" 
+  env_name: "BabyAI-GoToObjMazeS7-v0" 
   use_agent_type: False
-  num_distractors: 3
+  num_distractors: 7
   accelerator: "gpu"
 
 model:
@@ -46,7 +47,7 @@ model:
   mean: 5
   std: 5
   use_instruction: True
-  use_context: True
+  use_context: False
   image_size: 8
   image_channel: 3
 
@@ -66,21 +67,21 @@ model:
     label_dropout: 0
     n_agents: 8
     n_frames: 4
-    n_context_frames: 10
-    context_conditioning_type: action_space
+    n_context_frames: 0
+    context_conditioning_type: time
 
   load:
     load: False
     checkpoint: ""
 
 evaluation:
-  eval: False
+  eval: True
   agent_type: "diffusion"
   planning_type: "ivd"
-  ivd_config_file: ./configs/ivd_goto_distractors.yaml
+  ivd_config_file: ./configs/ivd_goto_distractors_large.yaml
   device: "cuda:0"
   num_envs: 512
-  max_timesteps: 15
+  max_timesteps: 100
   evaluation_episodes: 1
 
 training:
