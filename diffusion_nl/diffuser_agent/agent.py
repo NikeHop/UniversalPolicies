@@ -1,8 +1,10 @@
 """
-Agent that interacts with an environment using a diffusion model based planner + action models
-Action models available:
-- inverse dynamics model
-- manual mapping 
+Different types of agents that can interact with the environment.
+
+DeterminisiticAgent: Always takes the same action
+RandomAgent: Takes random actions
+LocalAgent: Combines a n-step diffusion planner with a local policy
+DiffusionAgent: Combines a 1-step diffusion planner with an IVD model
 """
 
 import os
@@ -13,6 +15,7 @@ import blosc
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import yaml 
 
 from einops import rearrange
 
@@ -89,7 +92,7 @@ class LocalAgent(object):
         start_obs = torch.stack(
             [torch.tensor(obs["image"], dtype=torch.float) for obs in obss], dim=0
         ).to(self.device)
-        # labels = torch.tensor([self.inst2label[obs["mission"]] for obs in obss],dtype=torch.long)
+        
         if self.diffusion_planner.context_type == "agent_id":
             context = (
                 torch.tensor([self.action_space] * len(obss)).long().to(self.device)
@@ -161,9 +164,15 @@ class LocalAgent(object):
             config["dm_model_checkpoint"],
         )
 
-        diffusion_planner = StateSpaceDiffusionModel.load_from_checkpoint(
-            filepath, map_location=config["device"], config=TEMP_CONFIG
-        )
+        if config["model_type"] == "edm":
+            diffusion_planner = EDMModel.load_from_checkpoint(
+                filepath, map_location=config["device"], 
+            )
+            diffusion_planner.num_steps = config["num_steps"]
+        else:
+            raise NotImplementedError(
+                f"Model type {config['model_type']} is not supported"
+            )
         diffusion_planner.eval()
 
         return diffusion_planner
@@ -211,21 +220,17 @@ class DiffusionAgent(object):
         self.labels = None
 
     def act(self, obss):
-        print("Inside act")
+        # Prepare planner inputs
         if self.episode_step == 0:
-            # Embed mission instructions
-            print("Embedding instructions")
-            print(self.device)
             self.labels = self.embed_instruction([obs["mission"] for obs in obss]).to(
                 self.device
             )
-
         missions = [obs["mission"] for obs in obss]
         start_obs = torch.stack(
             [torch.tensor(obs["image"], dtype=torch.float) for obs in obss], dim=0
         ).to(self.device)
 
-        # labels = torch.tensor([self.inst2label[obs["mission"]] for obs in obss],dtype=torch.long)
+        # Prepare context
         if self.diffusion_planner.context_type == "agent_id":
             context = (
                 torch.tensor([self.action_space] * len(obss)).long().to(self.device)
@@ -263,29 +268,25 @@ class DiffusionAgent(object):
                 f"This context type {self.diffusion_planner.context_type} is not supported"
             )
 
-        # Create a batch for the diffusion model to process
+        # Set conditioning information to 0 if not used
         B = len(obss)
         if not self.diffusion_planner.use_instruction:
             self.labels = torch.zeros(B,128).to(self.device)
         if not self.diffusion_planner.use_context:
             context = torch.zeros(B, 1, 8, 8, 3).to(self.device)
 
-        
-        print(start_obs.shape, context.shape, self.labels.shape)
+        # Sample
         _, xts = self.diffusion_planner.conditional_sample(
             start_obs, context, self.labels
         )
         
-        plans = xts
-
         # Attach starting observations to the plans
-        print(plans.shape)
-        print(start_obs.shape)
+        plans = xts
         plans = torch.cat([start_obs.unsqueeze(1), plans], dim=1)
-
         if self.visualize:
             self.visualize_plans(plans, missions)
 
+        # Label visual plans with actions using IVD model
         actions = []
         T = plans.shape[1]
         for i in range(T - 1):
@@ -323,11 +324,17 @@ class DiffusionAgent(object):
                 plt.savefig(f"./{mission}_{i}_{k}.png")
 
     def load_ivd_model(self, config):
+        # Load IVD config file
+        with open(config["ivd_config_path"], "r") as f:
+            ivd_config_dict = yaml.safe_load(f)
+
+        ivd_config = ivd_config_dict[config['action_space']]
+
         filepath = os.path.join(
             config["model_store"],
-            config["ivd_model_path"],
-            config["ivd_model_name"],
-            config["ivd_model_checkpoint"],
+            ivd_config["ivd_model_path"],
+            ivd_config["ivd_model_name"],
+            ivd_config["ivd_model_checkpoint"],
         )
         ivd_model = IVDBabyAI.load_from_checkpoint(filepath, map_location=config["device"])
         ivd_model.eval()
@@ -335,20 +342,9 @@ class DiffusionAgent(object):
         return ivd_model
 
     def load_diffusion_planner(self, config):
-        filepath = os.path.join(
-            config["model_store"],
-            config["dm_model_path"],
-            config["dm_model_name"],
-            config["dm_model_checkpoint"],
-        )
-
-        if config["model_type"] == "ddpm":
-            diffusion_planner = StateSpaceDiffusionModel.load_from_checkpoint(
-                filepath, map_location=config["device"]
-            )
-        elif config["model_type"] == "edm":
+        if config["model_type"] == "edm":
             diffusion_planner = EDMModel.load_from_checkpoint(
-                filepath, map_location=config["device"], 
+                config["checkpoint"], map_location=config["device"], 
             )
             diffusion_planner.num_steps = config["num_steps"]
         else:

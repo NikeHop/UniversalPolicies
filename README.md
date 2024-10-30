@@ -16,9 +16,9 @@ The code to generate demonstrations can be found in the `./diffusion_nl/environm
 `python generate_demos.py --config ./configs/CONFIG_FILE --action_space 0`.
 
 Here `CONFIG_FILE` should be one of:
-- `goto.yaml`: agent needs to go to the object; see [here](https://minigrid.farama.org/environments/babyai/GoToObj/)
-- `goto_distractor.yaml`: agent needs to go to an object with distractors present; see [here](https://minigrid.farama.org/environments/babyai/GoToLocal/)
-- `goto_distractor_large.yaml`, agent needs to go to an object with distractors present navigating through nine rooms; see [here](https://minigrid.farama.org/environments/babyai/GoTo/)
+- `goto.yaml`; agent needs to go to the object; see [here](https://minigrid.farama.org/environments/babyai/GoToObj/)
+- `goto_distractor.yaml`; agent needs to go to an object with distractors present; see [here](https://minigrid.farama.org/environments/babyai/GoToLocal/)
+- `goto_distractor_large.yaml`; agent needs to go to an object with distractors present navigating through nine rooms; see [here](https://minigrid.farama.org/environments/babyai/GoTo/)
 
 The available action spaces are:
 
@@ -90,6 +90,15 @@ By changing the config file we can train the following variations of the diffusi
 
 ### Evaluate via the Diffusion Agent
 
+The code to evaluate the diffusion planner can be found in `./diffusion_nl/diffuser_agent`. All the following commands should be run from there. To evaluate a trained diffusion planner in the GOTO environment with action space 0 run:
+
+`python eval.py --config ./configs/goto.yaml --checkpoint CHECKPOINT_PATH --action_space 0`.
+
+To evaluate a trained diffusion planner in the GOTO environment for all action spaces run:
+
+`bash ./scripts/eval_all_action_spaces.sh CHECKPOINT_PATH`.
+
+
 ### Train Imitation Learning Policies
 
 The code to train the imitation learning policies can be found in `./diffusion_nl/imitation_learning`. All the following commands should be run from there. To train the imitation learning baselines on a specific dataset for a specific action space run 
@@ -123,7 +132,7 @@ To use the trained IVD models of the GOTO environment, put the downloaded zip in
 
 ## Acknowledgements 
 
-The code used code elements from the following repositories:
+The code uses code elements from the following repositories:
 
 - [https://github.com/labmlai/annotated_deep_learning_paper_implementations](https://github.com/labmlai/annotated_deep_learning_paper_implementations) (MIT License)
 - [https://github.com/NVlabs/edm](https://github.com/NVlabs/edm) (CC BY-NC-SA 4.0)

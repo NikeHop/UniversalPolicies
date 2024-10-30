@@ -1,0 +1,39 @@
+---
+device: "cuda:0"
+env: goto
+action_model: "ivd"
+example_path: ../../data/EXAMPLES/goto_1_0_action_space_random.pkl
+evaluation_episodes: 1
+num_envs: 512
+max_timesteps: 15
+visualize: False
+visualize_traj: False
+n_example_frames: 10
+
+
+embeddings:
+  device: "cuda:0"
+  type: "t5"
+  size: 128
+  model: "google-t5/t5-small"
+  batch_size: 4096
+
+agent_type: 'diffusion'
+model:
+use_agent_type: False
+planning_type: "ivd"
+sampling_strategy: "ddpm"
+num_steps: 64
+action_space: 0
+num_distractors: 0
+model_type: "edm"
+model_store: ../../model_store
+ivd_config_path: "./configs/ivd_goto.yaml"
+checkpoint: ""
+
+logging:
+  experiment_name: "evaluation_diffusion_agent"
+  model_directory: "../../model_store"
+  project: DiffusionMultiAgent
+  tags: ["BabyAI","DiffusionPlanner","GoTo","Evaluation"]
+  mode: "online"

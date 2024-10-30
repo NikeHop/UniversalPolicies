@@ -1,0 +1,33 @@
+---
+0: 
+  ivd_model_path: UniversalPoliciesModels/IVD/GOTO
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_standard.ckpt
+1:
+  ivd_model_path: UniversalPoliciesModels/IVD/GOTO
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_no_left.ckpt
+2:
+  ivd_model_path: UniversalPoliciesModels/IVD/GOTO
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_no_right.ckpt
+3:
+  ivd_model_path: UniversalPoliciesModels/IVD/GOTO
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_diagonal.ckpt
+4:
+  ivd_model_path: UniversalPoliciesModels/IVD/GOTO
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_wsad.ckpt
+5:
+  ivd_model_path: UniversalPoliciesModels/IVD/GOTO
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_dir8.ckpt
+6:
+  ivd_model_path: UniversalPoliciesModels/IVD/GOTO
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_left_right.ckpt
+7:
+  ivd_model_path: UniversalPoliciesModels/IVD/GOTO
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_all_diagonal.ckpt
