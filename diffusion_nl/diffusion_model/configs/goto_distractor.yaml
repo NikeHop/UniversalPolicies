@@ -16,7 +16,7 @@ data:
     batch_size: 4096
   mean: 5
   std: 5
-  example_path: "../../data/EXAMPLES/goto_1_0_action_space_random.pkl"
+  example_path: "../../data/EXAMPLES/goto_1_3_action_space_random.pkl"
 
 logging:
   experiment_name: "diffusion_planner"

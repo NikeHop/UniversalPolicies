@@ -99,6 +99,7 @@ def get_eval_config(config: dict, action_space: int, model:pl.LightningModule, i
         "planning_type": "ivd",
         "device": config["evaluation"]["device"],
         "visualize": False,
+        "visualize_traj": False,
         "embeddings": {
             "model": config["data"]["embeddings"]["model"],
         },

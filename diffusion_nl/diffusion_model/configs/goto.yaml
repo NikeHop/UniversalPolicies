@@ -79,7 +79,7 @@ evaluation:
   eval: True
   agent_type: "diffusion"
   planning_type: "ivd"
-  ivd_config_file: ./configs/ivd_goto_distractors.yaml
+  ivd_config_file: ./configs/ivd_goto.yaml
   cond_w: 0
   device: "cuda:0"
   num_envs: 512
@@ -89,7 +89,7 @@ evaluation:
 training:
   early_stopping: False
   distributed: True
-  max_steps: 500001
+  max_steps: 10
   accelerator: "gpu"
   strategy: "ddp_find_unused_parameters_true"
   check_val_every_n_epoch: 

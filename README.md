@@ -70,7 +70,9 @@ To train an ivd for all available action spaces in an instance of the BabyAI env
 
 The code to train the diffusion planner can be found in `./diffusion_nl/diffusion_model`. All the following commands should be run from there. To train a diffusion planner for action space 0 in the GOTO environment run: 
 
-`python train.py --config ./configs/goto.yaml --datapath ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl --action_space 0`
+`python train.py --config ./configs/goto.yaml --datapath ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl --action_space 0`.
+
+After training the planner will be evaluated over 512 episodes in the corresponding environments. For that the IVD-models for the action space must exist and the path to the IVD must be specified in `ivd_goto.yaml`. 
 
 To train a diffusion planner for each action space separately in the GOTO environment run:
 
@@ -105,6 +107,7 @@ Changes to the evaluation can be made in the corresponding config files (`eval_i
 
 We make the trained inverse dynamics models, imitation learning baselines and diffusion planners for a single random seed in the GOTO environment available [here](https://drive.google.com/file/d/1aX9sYjRN3iFYyGr9mHpo41plymyy1qnt/view?usp=drive_link).
 
+To use the trained IVD models of the G
 
 ## Acknowledgements 
 

@@ -1,33 +1,33 @@
 ---
 0: 
-  ivd_model_path: ivd_model_all/DiffusionMultiAgent
-  ivd_model_name: glxouu22
-  ivd_model_checkpoint: checkpoints/epoch=9-step=11250.ckpt
+  ivd_model_path: UniversalPoliciesModel/IVD/GOTO_DISTRACTORS
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_distractors_standard.ckpt
 1:
-  ivd_model_path: ivd_model_all/DiffusionMultiAgent
-  ivd_model_name: 2wwng99z
-  ivd_model_checkpoint: checkpoints/epoch=9-step=11250.ckpt
+  ivd_model_path: UniversalPoliciesModel/IVD/GOTO_DISTRACTORS
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_distractors_no_left.ckpt
 2:
-  ivd_model_path: ivd_model_all/DiffusionMultiAgent
-  ivd_model_name: vhery93h
-  ivd_model_checkpoint: checkpoints/epoch=9-step=11250.ckpt
+  ivd_model_path: UniversalPoliciesModel/IVD/GOTO_DISTRACTORS
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_distractors_no_right.ckpt
 3:
-  ivd_model_path: ivd_model_all/DiffusionMultiAgent
-  ivd_model_name: sl7kaxfe
-  ivd_model_checkpoint: checkpoints/epoch=9-step=11250.ckpt
+  ivd_model_path: UniversalPoliciesModel/IVD/GOTO_DISTRACTORS
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_distractors_diagonal.ckpt
 4:
-  ivd_model_path: ivd_model_all/DiffusionMultiAgent
-  ivd_model_name: 1w6msn6w
-  ivd_model_checkpoint: checkpoints/epoch=9-step=11250.ckpt
+  ivd_model_path: UniversalPoliciesModel/IVD/GOTO_DISTRACTORS
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_distractors_wsad.ckpt
 5:
-  ivd_model_path: ivd_model_all/DiffusionMultiAgent
-  ivd_model_name: odw7l1xo
-  ivd_model_checkpoint: checkpoints/epoch=9-step=11250.ckpt
+  ivd_model_path: UniversalPoliciesModel/IVD/GOTO_DISTRACTORS
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_distractors_dir8.ckpt
 6:
-  ivd_model_path: ivd_model_all/DiffusionMultiAgent
-  ivd_model_name: o0d3z7ci
-  ivd_model_checkpoint: checkpoints/epoch=9-step=11250.ckpt
+  ivd_model_path: UniversalPoliciesModel/IVD/GOTO_DISTRACTORS
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_distractors_left_right.ckpt
 7:
-  ivd_model_path: ivd_model_all/DiffusionMultiAgent
-  ivd_model_name: ajfa75lh
-  ivd_model_checkpoint: checkpoints/epoch=9-step=11250.ckpt
+  ivd_model_path: UniversalPoliciesModel/IVD/GOTO_DISTRACTORS
+  ivd_model_name: ""
+  ivd_model_checkpoint: goto_distractors_all_diagonal.ckpt

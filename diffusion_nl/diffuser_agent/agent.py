@@ -205,10 +205,6 @@ class DiffusionAgent(object):
             config["embeddings"]["model"]
         ).to(config["device"])
 
-        # Set the conditonal weight for classifier free guidance
-        self.diffusion_planner.cond_w = torch.tensor(config["cond_w"]).to(self.device)
-        
-
     def reset(self):
         self.plan = []
         self.episode_step = 0
@@ -276,7 +272,7 @@ class DiffusionAgent(object):
 
         
         print(start_obs.shape, context.shape, self.labels.shape)
-        _, _, xts = self.diffusion_planner.conditional_sample(
+        _, xts = self.diffusion_planner.conditional_sample(
             start_obs, context, self.labels
         )
         
