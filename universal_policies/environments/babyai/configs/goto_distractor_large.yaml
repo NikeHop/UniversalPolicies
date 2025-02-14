@@ -1,0 +1,20 @@
+---
+action_space: 0
+data_directory: ../../../data
+env: GOTO_DISTRACTORS_LARGE
+fig_directory: ../figures/baby_ai
+img_size: 128
+max_steps: 100
+minimum_length: 4
+num_distractors: 7
+num_workers: 32
+n_episodes: 25000
+seed: 42
+use_agent_type: False
+use_img_obs: False
+part: -1
+logging:
+  mode: online
+  project: "DiffusionMultiAgent"
+  experiment_name: "data_generation_babyai"
+  tags: ["BabyAI","DataGeneration","GoToDistractorLarge"]

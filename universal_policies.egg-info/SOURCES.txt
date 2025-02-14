@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+universal_policies.egg-info/PKG-INFO
+universal_policies.egg-info/SOURCES.txt
+universal_policies.egg-info/dependency_links.txt
+universal_policies.egg-info/requires.txt
+universal_policies.egg-info/top_level.txt

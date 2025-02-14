@@ -1,4 +1,5 @@
 # Making Universal Policies Universal
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ![method overview](./assets/overview_method.png)
 
@@ -7,13 +8,23 @@
 
 All of the logging is done via [WandB](https://wandb.ai/site/).
 
+Create a new [conda](https://docs.anaconda.com/miniconda/) environment and install the dependecies:
+
+```
+conda create -n universal_policies python=3.11
+conda activate universal_policies
+pip install . 
+```
+
 ## Run Experiments 
 
 ### Generate Demonstrations 
 
-The code to generate demonstrations can be found in the `./diffusion_nl/environments/babyai` folder all following commands should be run from there. To generate the demonstration datasets for the different environments and different actions spaces, run:
+The code to generate demonstrations can be found in the `./universal_policies/environments/babyai` folder all following commands should be run from there. To generate the demonstration datasets for the different environments and different actions spaces, run:
 
-`python generate_demos.py --config ./configs/CONFIG_FILE --action_space 0`.
+```
+python generate_demos.py --config ./configs/CONFIG_FILE --action_space 0
+```
 
 Here `CONFIG_FILE` should be one of:
 - `goto.yaml`; agent needs to go to the object; see [here](https://minigrid.farama.org/environments/babyai/GoToObj/)
@@ -45,39 +56,49 @@ The resulting pickle file contains a list of tuples and will be stored in a fold
 
 To generate the dataset for all action spaces and pool all datasets from the in-distribution agents (0-5) to create the mixture dataset run:
 
-`bash ./scripts/data_generation.sh`
+```
+bash ./scripts/data_generation.sh` ./configs/CONFIG.yaml
+```
 
 The data for the GOTO environment is already part of the repository (see `./data`).
 
 To create example trajectories of each agent type that the diffusion planner can be conditioned on run: 
 
-`python generate_examples.py --config ./configs/generate_examples.yaml`.
+```
+python generate_examples.py --config ./configs/generate_examples.yaml`.
+```
 
 The type of examples to be generated can be specified in the config file. Running the command will create a .pkl file in `./data/EXAMPLES` that contains a dictionary mapping the action-space ID to a list of examples the planner can be conditioned on. 
 The file follows the following naming convention `{env}_{n_examples}_{n_distractors}_{example_type}.pkl`.
 
 ### Train Inverse Dynamics Models 
 
-The code for the inverse dynamics models can be found in `./diffusion_nl/ivd_model`. All the following commands should be run from there. To train an inverse dynamics model for a given action space on a specific dataset run:
+The code for the inverse dynamics models can be found in `./universal_policies/ivd_model`. All the following commands should be run from there. To train an inverse dynamics model for a given action space on a specific dataset run:
 
-`python train.py ./configs/ivd.yaml --datapath ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl --action_space 0`
+```
+python train.py --config ./configs/ivd.yaml --datapath ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl --action_space 0
+```
 
 To train an ivd for all available action spaces in an instance of the BabyAI environment, add the corresponding datapaths to the script `./scripts/train_ivds.sh` and run:
 
-`bash ./scripts/train_ivds.sh`
-
+```
+bash ./scripts/train_ivds.sh
+```
 
 ### Train the Diffusion Planner 
 
-The code to train the diffusion planner can be found in `./diffusion_nl/diffusion_model`. All the following commands should be run from there. To train a diffusion planner for action space 0 in the GOTO environment run: 
+The code to train the diffusion planner can be found in `./universal_policies/diffusion_model`. All the following commands should be run from there. To train a diffusion planner for action space 0 in the GOTO environment run: 
 
-`python train.py --config ./configs/goto.yaml --datapath ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl --action_space 0`.
-
+```
+python train.py --config ./configs/goto.yaml --datapath ../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl --action_space 0
+```
 After training the planner will be evaluated over 512 episodes in the corresponding environment. For that the IVD-models for the action space must exist and the path to the IVD must be specified in `ivd_goto.yaml`. To obtain pretrained IVDs see [here](#trained-models) or to train them from scratch see [here](#train-inverse-dynamics-models)
 
 To train a diffusion planner for each action space separately in the GOTO environment run:
 
-`bash train_all_action_spaces.sh`.
+```
+bash ./scripts/train_all_action_spaces.sh
+```
 
 By changing the config file we can train the following variations of the diffusion planner:
 
@@ -90,24 +111,31 @@ By changing the config file we can train the following variations of the diffusi
 
 ### Evaluate via the Diffusion Agent
 
-The code to evaluate the diffusion planner can be found in `./diffusion_nl/diffuser_agent`. All the following commands should be run from there. To evaluate a trained diffusion planner in the GOTO environment with action space 0 run:
+The code to evaluate the diffusion planner can be found in `./universal_policies/diffuser_agent`. All the following commands should be run from there. To evaluate a trained diffusion planner in the GOTO environment with action space 0 run:
 
-`python eval.py --config ./configs/goto.yaml --checkpoint CHECKPOINT_PATH --action_space 0`.
+```
+python eval.py --config ./configs/goto.yaml --checkpoint CHECKPOINT_PATH --action_space 0
+```
 
 To evaluate a trained diffusion planner in the GOTO environment for all action spaces run:
 
-`bash ./scripts/eval_all_action_spaces.sh CHECKPOINT_PATH`.
-
+```
+bash ./scripts/eval_all_action_spaces.sh CHECKPOINT_PATH
+```
 
 ### Train Imitation Learning Policies
 
-The code to train the imitation learning policies can be found in `./diffusion_nl/imitation_learning`. All the following commands should be run from there. To train the imitation learning baselines on a specific dataset for a specific action space run 
+The code to train the imitation learning policies can be found in `./universal_policies/imitation_learning`. All the following commands should be run from there. To train the imitation learning baselines on a specific dataset for a specific action space run 
 
-`python train.py --config ./configs/instruction_imitation_goto.yaml --datapath "../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl" --action_space 0`
+```
+python train.py --config ./configs/instruction_imitation_goto.yaml --datapath "../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl" --action_space 0
+```
 
 After training the model is evaluated over 512 episodes in the corresponding environment. To train the IL baseline for all action spaces run:
 
-`bash ./scripts/train_il_all_action_spaces.sh`
+```
+bash ./scripts/train_il_all_action_spaces.sh
+```
 
 To run the imitation learning baselines that can handle multiple action spaces use the following config files:
 - `agent_heads_goto.yaml` ("IL - Agent Head")
@@ -118,7 +146,9 @@ To run the imitation learning baselines that can handle multiple action spaces u
 
 To evaluate policies in the GOTO environment that work for multiple agents (IL - Agent Head, IL - Union of Action Spaces) on all action space (0-7) run:
 
-`bash eval_all_action_spaces.sh PATH_TO_CHECKPOINT`.
+```
+bash eval_all_action_spaces.sh PATH_TO_CHECKPOINT
+```
 
 Changes to the evaluation can be made in the corresponding config files (`eval_instruction_imitation_goto.yaml`,`eval_instruction_imitation_goto_distractors.yaml`).
 
@@ -128,8 +158,9 @@ We make the trained inverse dynamics models, imitation learning baselines and di
 
 To use the trained IVD models of the GOTO environment, put the downloaded zip into the `./model_store` folder and unzip it:
 
-`unzip -r UniversalPoliciesModels.zip UniversalPoliciesModels`
-
+```
+unzip -r UniversalPoliciesModels.zip UniversalPoliciesModels
+```
 ## Acknowledgements 
 
 The code uses code elements from the following repositories:

@@ -1,0 +1,50 @@
+---
+goal_type: "language"
+seed: 42
+
+data:
+  datapath: "../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl"
+  max_gap: 100
+  batch_size: 128
+  percentage: 0.8
+
+embeddings:
+  device: "cuda:0"
+  type: "t5"
+  model: "google-t5/t5-small"
+  batch_size: 4096
+
+model:
+  lr: 0.0001
+  large_env: False
+  action_space: 0
+  use_agent_id: False
+  use_unique_agent_heads: False
+  load:
+    load: False
+    checkpoint: ""
+
+training:
+  distributed: True
+  accelerator: "gpu"
+  gpus: [0]
+  strategy: "ddp_find_unused_parameters_true"
+  max_epochs: 500
+
+logging:
+  project: "DiffusionMultiAgent"
+  mode: online
+  model_directory: "../../model_store"
+  experiment_name: "imitation_learning"
+  tags: ["BabyAI","ImitationLearning","GoTo"]
+
+eval:
+  eval: True
+  device: "cuda:0"
+  env: "goto"
+  encoder_model: "google-t5/t5-small"
+  num_distractors: 0
+  action_space: 0
+  num_envs: 512
+  evaluation_episodes: 1
+  max_timesteps: 15
