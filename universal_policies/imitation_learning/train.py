@@ -75,7 +75,6 @@ def register_envs(entrypoint):
     """
     for color in COLOR_NAMES:
         for obj in ["ball", "box", "key"]:
-            print("Register environment")
             register(
                 id=f"BabyAI-FixInstGoTo{color.capitalize()}{obj.capitalize()}-v0",
                 entry_point=entrypoint,

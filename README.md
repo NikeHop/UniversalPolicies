@@ -170,10 +170,8 @@ python train.py --config ./configs/obs_imitation_goto.yaml --datapath "../../dat
 * 3. To evaluate the multi-step planner run from the `universal_policies/diffuser_agent` directory:
 
 ```
-python eval.py --config ./configs/multi_step_planner.yaml --checkpoint PATH_TO_DIFFUSION_PLANNER --policy_checkpoint PATH_TO_GOAL_COND_POLICY
+python eval.py --config ./configs/multi_step_planner.yaml --checkpoint PATH_TO_DIFFUSION_PLANNER --policy_checkpoint PATH_TO_GOAL_COND_POLICY --n_timesteps n
 ```
-
-
 
 
 ## Trained Models 

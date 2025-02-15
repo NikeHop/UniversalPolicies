@@ -41,7 +41,7 @@ def eval(config):
         )
 
 
-def eval_ivd(config, model=None):
+def eval_ivd(config):
     # Create evaluation environments
     action_space = ActionSpace(config["action_space"])
 
@@ -75,7 +75,7 @@ def eval_ivd(config, model=None):
         raise NotImplementedError(f"Environment {config['env']} not implemented")
 
     # Load the agent
-    agent = get_agent(config, model)
+    agent = get_agent(config)
     total_rewards = defaultdict(list)
     completion_rate = defaultdict(list)
     trajectories = defaultdict(list)
@@ -139,12 +139,8 @@ def eval_ivd(config, model=None):
                         break
 
                 filename = f"{config['action_space']}_{instruction}_{i}.mp4"
-                filedir = os.path.join(
-                    config["model_store"],
-                    config["dm_model_path"],
-                    config["dm_model_name"],
-                    "evaluation_videos",
-                )
+                base_dir = os.path.dirname(config["checkpoint"])
+                filedir = os.path.join(base_dir, "evaluation_videos")
 
                 if not os.path.exists(filedir):
                     os.makedirs(filedir)
@@ -223,6 +219,7 @@ def eval_local_policy(config):
         n_timesteps = 0
 
         # Environment
+        pbar = tqdm.tqdm(total=config["max_timesteps"])
         while not all_done:
             # Agent plans the next goals
             plans = agent.plan(obss)  # BxTxHxWxC
@@ -231,7 +228,7 @@ def eval_local_policy(config):
             new_obss = []
 
             # For every goal, execute k timesteps
-            for i in range(config["n_frames"]):
+            for i in range(agent.diffusion_planner.num_frames - 1):
                 for k in range(config["n_timesteps"]):
                     actions = agent.act(obss, plans[:, i])
                     for n, (action, env) in enumerate(zip(actions, envs)):
@@ -253,8 +250,10 @@ def eval_local_policy(config):
             if n_timesteps > config["max_timesteps"]:
                 all_done = True
 
+            pbar.update(n_timesteps)
+
         # Visualize the trajectories
-        if config["visualize"]:
+        if config["visualize_traj"]:
             for i in range(min(10, config["num_envs"])):
                 video = []
                 for obs in trajectories[i]:
@@ -262,16 +261,11 @@ def eval_local_policy(config):
                     video.append(img)
                     instruction = obs["mission"]
 
-                filename = f"{instruction}_{i}.mp4"
-                filedir = os.path.join(
-                    config["model_store"],
-                    config["dm_model_path"],
-                    config["dm_model_name"],
-                    "evaluation_videos",
-                )
+                filename = filename = f"{config['action_space']}_{instruction}_{i}.mp4"
+                base_dir = os.path.dirname(config["checkpoint"])
+                filedir = os.path.join(base_dir, "evaluation_videos")
 
-                if not os.path.exists(filedir):
-                    os.makedirs(filedir)
+                os.makedirs(filedir, exist_ok=True)
                 filepath = os.path.join(filedir, filename)
 
                 write_video(filepath, video, fps=2)
@@ -293,16 +287,16 @@ def eval_local_policy(config):
     )
 
 
-def get_agent(config, model):
+def get_agent(config):
     if config["agent_type"] == "deterministic":
         return DeterministicAgent(config["action"])
     elif config["agent_type"] == "random":
         return RandomAgent(config["n_actions"])
     elif config["agent_type"] == "diffusion":
-        if config["planning_type"] == "ivd":
+        if config["action_model"] == "ivd":
             agent = DiffusionAgent(config)
             agent.load_examples(config["example_path"])
-        elif config["planning_type"] == "local_policy":
+        elif config["action_model"] == "local_policy":
             agent = LocalAgent(config)
             agent.load_examples(config["example_path"])
         return agent
@@ -316,7 +310,6 @@ def register_envs(entrypoint):
     """
     for color in COLOR_NAMES:
         for obj in ["ball", "box", "key"]:
-            print("Register environment")
             register(
                 id=f"BabyAI-FixInstGoTo{color.capitalize()}{obj.capitalize()}-v0",
                 entry_point=entrypoint,
@@ -325,7 +318,9 @@ def register_envs(entrypoint):
 
 
 if __name__ == "__main__":
-    register_envs("diffusion_nl.environments.babyai.goto_specific:GoToSpecificObject")
+    register_envs(
+        "universal_policies.environments.babyai.goto_specific:GoToSpecificObject"
+    )
 
     parser = argparse.ArgumentParser(
         description="Evaluation script for the diffuser agent"
@@ -358,6 +353,12 @@ if __name__ == "__main__":
         default=None,
         help="Number of frames to use for the examples",
     )
+    parser.add_argument(
+        "--n_timesteps",
+        type=int,
+        default=1,
+        help="Number of timesteps to execute the local policy",
+    )
     args = parser.parse_args()
 
     with open(args.config, "rb") as f:
@@ -378,6 +379,8 @@ if __name__ == "__main__":
         config["example_path"] = args.example_path
     if args.n_example_frames != None:
         config["n_example_frames"] = args.n_example_frames
+    if args.n_timesteps != None:
+        config["n_timesteps"] = args.n_timesteps
 
     wandb.init(
         project=config["logging"]["project"],

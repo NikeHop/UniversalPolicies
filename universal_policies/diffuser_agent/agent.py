@@ -80,7 +80,6 @@ class LocalAgent(object):
     def plan(self, obss):
         if self.episode_step == 0:
             # Embed mission instructions
-            print("Embedding instructions")
             self.labels = self.embed_instruction([obs["mission"] for obs in obss]).to(
                 self.device
             )
@@ -126,16 +125,17 @@ class LocalAgent(object):
             )
 
         # Create a batch for the diffusion model to process
-        _, _, xts = self.diffusion_planner.conditional_sample(
+        _, xts = self.diffusion_planner.conditional_sample(
             start_obs, context, self.labels
         )
-        plans = xts[-1]
 
         # Visualize plans
         if self.visualize:
-            self.visualize_plans(plans, missions)
+            self.visualize_plans(xts, missions)
 
-        return plans
+        self.episode_step += 1
+
+        return xts
 
     def act(self, current_states, goals):
         current_states = torch.stack(
@@ -145,8 +145,13 @@ class LocalAgent(object):
 
         current_states = rearrange(current_states, "B H W C -> B C H W")
         goals = rearrange(goals, "B H W C -> B C H W")
-        action_probs = self.policy.model(current_states, goals)
-        actions = action_probs.argmax(dim=-1)
+        action_probs = self.policy.model(
+            current_states, goals, torch.tensor(int(self.action_space))
+        )
+        local_actions = action_probs.argmax(dim=-1)
+        actions = torch.tensor(
+            [self.policy.local2global[l.item()] for l in local_actions]
+        )
         return actions
 
     def visualize_plans(self, plans, missions):

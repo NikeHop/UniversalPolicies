@@ -186,7 +186,6 @@ def register_envs(entrypoint):
     """
     for color in COLOR_NAMES:
         for obj in ["ball", "box", "key"]:
-            print("Register environment")
             register(
                 id=f"BabyAI-FixInstGoTo{color.capitalize()}{obj.capitalize()}-v0",
                 entry_point=entrypoint,
@@ -196,7 +195,7 @@ def register_envs(entrypoint):
 
 if __name__ == "__main__":
     register_envs(
-        "diffusion_nl.environments.babyai.goto_specific:GoToSpecificObject"
+        "universal_policies.environments.babyai.goto_specific:GoToSpecificObject"
     )  # registers fixed instruction envs with gym
 
     parser = argparse.ArgumentParser()

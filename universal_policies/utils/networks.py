@@ -252,7 +252,6 @@ class TimeResidualBlock(nn.Module):
         self.d2 = d2
 
         # Group normalization and the first convolution layer
-        print(f"First: {n_groups}, {in_channels}")
         self.norm1 = nn.GroupNorm(n_groups, in_channels)
         self.act1 = Swish()
 
@@ -265,7 +264,6 @@ class TimeResidualBlock(nn.Module):
                 in_channels, out_channels, kernel_size=(1, 3, 3), padding=(0, 1, 1)
             )
 
-        print(f"Second: {n_groups}, {in_channels}")
         # Group normalization and the second convolution layer
         self.norm2 = nn.GroupNorm(n_groups, out_channels)
         self.act2 = Swish()
