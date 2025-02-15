@@ -56,6 +56,7 @@ class ImitationPolicy(pl.LightningModule):
         self.lr = config["model"]["lr"]
         self.use_agent_id = config["model"]["use_agent_id"]
         self.action_space = ActionSpace(config["model"]["action_space"])
+        self.goal_type = config["goal_type"]
         self.legal_actions = self.action_space.get_legal_actions()
 
         self.global2local = {action: i for i, action in enumerate(self.legal_actions)}
@@ -105,17 +106,21 @@ class ImitationPolicy(pl.LightningModule):
         agent_ids = agent_ids.to(device)
 
         # Embed Instructions
-        goals = [obs["mission"] for obs in obss]
-        inputs = self.tokenizer(
-            goals, padding=True, return_tensors="pt", truncation=True
-        ).to(device)
-        goals = (
-            self.encoder_model(
-                input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"]
+        if self.goal_type == "language":
+            goals = [obs["mission"] for obs in obss]
+            inputs = self.tokenizer(
+                goals, padding=True, return_tensors="pt", truncation=True
+            ).to(device)
+            goals = (
+                self.encoder_model(
+                    input_ids=inputs["input_ids"],
+                    attention_mask=inputs["attention_mask"],
+                )
+                .last_hidden_state.mean(dim=1)
+                .to(device)
             )
-            .last_hidden_state.mean(dim=1)
-            .to(device)
-        )
+        else:
+            raise NotImplementedError(f"Goal type {self.goal_type} not implemented")
 
         # Current Observation
         obss = torch.stack(

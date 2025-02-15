@@ -134,7 +134,7 @@ def get_data_goal_language_policy(config):
 
 def get_data_goal_obs_policy(config):
     # Load data
-    with open(config["data"]["directory"], "rb") as file:
+    with open(config["data"]["datapath"], "rb") as file:
         data = pickle.load(file)
 
     # Create dataset

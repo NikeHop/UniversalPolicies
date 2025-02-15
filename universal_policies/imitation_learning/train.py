@@ -65,7 +65,7 @@ def train_imitation_learning(config):
         trainer.fit(model, train_dataloader, test_dataloader)
 
         # Evaluation
-        if config["eval"]["eval"]:
+        if config["eval"]["eval"] and config["goal_type"] == "language":
             eval(config["eval"], model)
 
 
@@ -84,7 +84,9 @@ def register_envs(entrypoint):
 
 
 if __name__ == "__main__":
-    register_envs("diffusion_nl.environments.babyai.goto_specific:GoToSpecificObject")
+    register_envs(
+        "universal_policies.environments.babyai.goto_specific:GoToSpecificObject"
+    )
 
     parser = argparse.ArgumentParser()
     parser.add_argument(

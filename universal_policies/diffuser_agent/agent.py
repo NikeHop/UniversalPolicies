@@ -160,16 +160,9 @@ class LocalAgent(object):
                 plt.savefig(f"./{mission}_{i}_{k}.png")
 
     def load_diffusion_planner(self, config):
-        filepath = os.path.join(
-            config["model_store"],
-            config["dm_model_path"],
-            config["dm_model_name"],
-            config["dm_model_checkpoint"],
-        )
-
         if config["model_type"] == "edm":
             diffusion_planner = EDMModel.load_from_checkpoint(
-                filepath,
+                config["checkpoint"],
                 map_location=config["device"],
             )
             diffusion_planner.num_steps = config["num_steps"]
@@ -182,18 +175,10 @@ class LocalAgent(object):
         return diffusion_planner
 
     def load_policy(self, config):
-        filepath = os.path.join(
-            config["model_store"],
-            config["policy_path"],
-            config["policy_name"],
-            config["policy_checkpoint"],
-        )
-
         policy = ImitationPolicy.load_from_checkpoint(
-            filepath, map_location=config["device"]
+            config["policy_checkpoint"], map_location=config["device"]
         )
         policy.eval()
-
         return policy
 
     def load_examples(self, filepath):

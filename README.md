@@ -1,4 +1,5 @@
 # Making Universal Policies Universal
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ![method overview](./assets/overview_method.png)
@@ -25,6 +26,7 @@ The code to generate demonstrations can be found in the `./universal_policies/en
 ```
 python generate_demos.py --config ./configs/CONFIG_FILE --action_space 0
 ```
+
 
 Here `CONFIG_FILE` should be one of:
 - `goto.yaml`; agent needs to go to the object; see [here](https://minigrid.farama.org/environments/babyai/GoToObj/)
@@ -109,6 +111,7 @@ By changing the config file we can train the following variations of the diffusi
 - goto_distractor.yaml; train on standard dataset in GoTo-Distractors environment and condition on agentid.
 - goto_distractor_large.yaml; train on standard dataset in GoTo-Distractors-Large environment and condition on agentid.
 
+
 ### Evaluate via the Diffusion Agent
 
 The code to evaluate the diffusion planner can be found in `./universal_policies/diffuser_agent`. All the following commands should be run from there. To evaluate a trained diffusion planner in the GOTO environment with action space 0 run:
@@ -142,6 +145,7 @@ To run the imitation learning baselines that can handle multiple action spaces u
 - `complete_action_space_goto.yaml` ("IL - Union of Action Spaces").
 
 
+
 ### Evaluate Imitation Learning Policies
 
 To evaluate policies in the GOTO environment that work for multiple agents (IL - Agent Head, IL - Union of Action Spaces) on all action space (0-7) run:
@@ -151,6 +155,26 @@ bash eval_all_action_spaces.sh PATH_TO_CHECKPOINT
 ```
 
 Changes to the evaluation can be made in the corresponding config files (`eval_instruction_imitation_goto.yaml`,`eval_instruction_imitation_goto_distractors.yaml`).
+
+
+## Train & Evaluate Multi-Step Planners
+
+* 1. Train a planner that plans for $n$-timesteps at each planning step, by setting the `step_frequency` parameter to $n$ in the corresponding diffusion model config. 
+
+* 2. Train a goal-conditioned imitation learning policy by running from the `universal_policies/imitation_learning` learning directory with the corresponding parameters:
+
+```
+python train.py --config ./configs/obs_imitation_goto.yaml --datapath "../../data/GOTO/standard_83_4_0_False_demos/dataset_83.pkl" --action_space 0
+```
+
+* 3. To evaluate the multi-step planner run from the `universal_policies/diffuser_agent` directory:
+
+```
+python eval.py --config ./configs/multi_step_planner.yaml --checkpoint PATH_TO_DIFFUSION_PLANNER --policy_checkpoint PATH_TO_GOAL_COND_POLICY
+```
+
+
+
 
 ## Trained Models 
 

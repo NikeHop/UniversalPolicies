@@ -7,7 +7,7 @@ data:
   batch_size: 64
   n_frames: 4
   n_context_frames: 10
-  step_frequency: 1
+  step_frequency: 2
   embeddings:
     device: "cuda:0"
     type: "t5"
@@ -93,6 +93,6 @@ training:
   accelerator: "gpu"
   strategy: "ddp_find_unused_parameters_true"
   check_val_every_n_epoch: 
-  val_check_interval: 100000
+  val_check_interval: 1000
   gpus: [0]
   save_all: True

@@ -1,6 +1,4 @@
-"""
-Evaluation script for the diffuser agent 
-"""
+"""Evaluation script for the diffuser agent. """
 
 import argparse
 import os
@@ -338,6 +336,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint", type=str, help="Checkpoint of the diffusion planner to load"
     )
+    parser.add_argument(
+        "--policy_checkpoint", type=str, help="Checkpoint of the policy to load"
+    )
     parser.add_argument("--device", type=str, help="Which device to use")
     parser.add_argument(
         "--action_space", type=int, default=None, help="action space for the agent"
@@ -364,6 +365,8 @@ if __name__ == "__main__":
 
     if args.checkpoint != None:
         config["checkpoint"] = args.checkpoint
+    if args.policy_checkpoint != None:
+        config["policy_checkpoint"] = args.policy_checkpoint
     if args.device != None:
         config["device"] = args.device
         config["embeddings"]["device"] = args.device
