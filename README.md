@@ -14,7 +14,7 @@ Create a new [conda](https://docs.anaconda.com/miniconda/) environment and insta
 ```
 conda create -n universal_policies python=3.11
 conda activate universal_policies
-pip install . 
+pip install -e . 
 ```
 
 ## Run Experiments 
