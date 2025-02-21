@@ -2,6 +2,8 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+Code for the paper ["Making universal policies universal"](https://arxiv.org/abs/2502.14777).
+
 ![method overview](./assets/overview_method.png)
 
 ## Prerequisites & Dependencies
