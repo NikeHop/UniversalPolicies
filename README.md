@@ -4,7 +4,7 @@
 
 Code for the paper ["Making universal policies universal"](https://arxiv.org/abs/2502.14777).
 
-see also [Project Page](https://nikehop.github.io/making_universal_policies_universal/).
+See also [Project Page](https://nikehop.github.io/making_universal_policies_universal/).
 
 ![method overview](./assets/overview_method.png)
 
